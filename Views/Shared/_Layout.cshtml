@@ -126,7 +126,7 @@
                                     </ul>
                                 </li>
                                 <li>
-                                    <a href="wishlist.html">
+                                    <a href="/Wishlist">
                                         <i class="pe-7s-like"></i>
                                     </a>
                                 </li>
@@ -267,12 +267,12 @@
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a href="cart.html">
+                                                        <a href="/Cart">
                                                             <span class="mm-text">Shopping Cart</span>
                                                         </a>
                                                     </li>
                                                     <li>
-                                                        <a href="wishlist.html">
+                                                        <a href="/Wishlist">
                                                             <span class="mm-text">Wishlist</span>
                                                         </a>
                                                     </li>
@@ -555,6 +555,205 @@
     <script src="~/assets/js/main.js"></script>
 
     <script src="~/assets/toastr/toastr.min.js"></script>
+
+    <style>
+        /* Đảm bảo các link thêm vào giỏ hàng và yêu thích có thể click được */
+        .product-add-action {
+            pointer-events: auto !important;
+        }
+        
+        .product-add-action a {
+            cursor: pointer !important;
+            z-index: 10 !important;
+            position: relative !important;
+            pointer-events: auto !important;
+        }
+        
+        .product-add-action ul li a {
+            pointer-events: auto !important;
+            display: block !important;
+        }
+        
+        /* Đảm bảo khi hover, các link vẫn click được */
+        .product-item:hover .product-add-action {
+            z-index: 100 !important;
+            pointer-events: auto !important;
+        }
+        
+        /* Đảm bảo các link luôn có thể click ngay cả khi ẩn */
+        .product-add-action ul li {
+            pointer-events: auto !important;
+        }
+        
+        /* Style cho badge giảm giá */
+        .product-badge {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%) !important;
+            box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            padding: 6px 10px !important;
+            letter-spacing: 0.5px;
+            animation: pulse 2s infinite;
+        }
+        
+        @@keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        .product-item:hover .product-badge {
+            animation: none;
+            transform: scale(1.1);
+        }
+    </style>
+
+    <script>
+        // Cấu hình toastr
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "3000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+
+        // Xử lý wishlist (thêm/xóa yêu thích)
+        $(document).ready(function() {
+            $(document).on('click', '.wishlist-toggle-link', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                var link = $(this);
+                var icon = link.find('i');
+                var productId = link.data('product-id');
+                var url = link.data('url') || window.location.pathname;
+                
+                if (!productId) {
+                    console.error('Product ID not found');
+                    return;
+                }
+                
+                // Disable link
+                link.css('pointer-events', 'none').css('opacity', '0.6');
+                
+                $.ajax({
+                    url: '/Wishlist/AddOrRemoveWishlist',
+                    type: 'POST',
+                    data: {
+                        id: productId,
+                        Url: url
+                    },
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Cập nhật icon dựa trên trạng thái
+                            if (response.isInWishlist) {
+                                icon.css('color', 'red');
+                                toastr.success(response.message, 'Thành công');
+                            } else {
+                                icon.css('color', '');
+                                toastr.info(response.message, 'Thông báo');
+                            }
+                        } else {
+                            toastr.error(response.message, 'Lỗi');
+                            
+                            if (response.redirect) {
+                                setTimeout(function() {
+                                    window.location.href = response.redirect;
+                                }, 1500);
+                            }
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Có lỗi xảy ra!', 'Lỗi');
+                    },
+                    complete: function() {
+                        // Enable lại link
+                        link.css('pointer-events', 'auto').css('opacity', '1');
+                    }
+                });
+            });
+
+            // Xử lý thêm vào giỏ hàng từ link (trong product component)
+            $(document).on('click', '.add-to-cart-link', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                var link = $(this);
+                var productId = link.data('product-id');
+                var url = link.data('url') || window.location.pathname;
+                var quantity = 1;
+                
+                if (!productId) {
+                    console.error('Product ID not found');
+                    return;
+                }
+                
+                // Disable link
+                link.css('pointer-events', 'none').css('opacity', '0.6');
+                
+                $.ajax({
+                    url: '/Cart/addCart',
+                    type: 'POST',
+                    data: {
+                        id: productId,
+                        Url: url,
+                        Quantity: quantity
+                    },
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Hiển thị toastr thông báo thành công
+                            toastr.success(response.message, 'Thành công');
+                            
+                            // Reload mini cart (nếu có)
+                            if (typeof reloadMiniCart === 'function') {
+                                reloadMiniCart();
+                            } else {
+                                // Reload trang để cập nhật mini cart
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1000);
+                            }
+                        } else {
+                            toastr.error(response.message, 'Lỗi');
+                            
+                            if (response.redirect) {
+                                setTimeout(function() {
+                                    window.location.href = response.redirect;
+                                }, 1500);
+                            }
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'Lỗi');
+                    },
+                    complete: function() {
+                        // Enable lại link
+                        link.css('pointer-events', 'auto').css('opacity', '1');
+                    }
+                });
+            });
+        });
+    </script>
 
     @RenderSection("Scripts", required: false)
 

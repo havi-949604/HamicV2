@@ -1,0 +1,289 @@
+@model IEnumerable<Harmic.Models.TbCustomer>
+
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewBag.active = "Users";
+    var roles = ViewBag.Roles as List<Harmic.Models.TbRole>;
+    var search = ViewBag.Search as string ?? "";
+    var selectedRoleId = ViewBag.SelectedRoleId as int?;
+}
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Quản lý người dùng</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/Admin/Home">Trang chủ</a></li>
+                        <li class="breadcrumb-item active">Quản lý người dùng</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Filter và Search -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <form method="get" action="/Admin/Users" class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Tìm kiếm</label>
+                                        <input type="text" name="search" class="form-control" placeholder="Tên, Email, SĐT..." value="@search">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Lọc theo Role</label>
+                                        <select name="roleId" class="form-control">
+                                            <option value="">Tất cả</option>
+                                            @if (roles != null)
+                                            {
+                                                @foreach (var role in roles)
+                                                {
+                                                    var isSelected = selectedRoleId == role.RoleId;
+                                                    <option value="@role.RoleId" selected="@isSelected">
+                                                        @role.RoleName
+                                                    </option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary mr-2">
+                                        <i class="fas fa-search"></i> Tìm kiếm
+                                    </button>
+                                    <a href="/Admin/Users" class="btn btn-secondary">
+                                        <i class="fas fa-redo"></i> Reset
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách người dùng -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                Danh sách người dùng 
+                                <span class="badge badge-info">@Model.Count()</span>
+                            </h3>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">ID</th>
+                                        <th>Tên đăng nhập</th>
+                                        <th>Email</th>
+                                        <th>Số điện thoại</th>
+                                        <th>Role</th>
+                                        <th style="width: 180px;">Đổi Role</th>
+                                        <th style="width: 120px;">Trạng thái</th>
+                                        <th style="width: 150px;">Đăng nhập lần cuối</th>
+                                        <th style="width: 100px;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.Any())
+                                    {
+                                        @foreach (var user in Model)
+                                        {
+                                            <tr>
+                                                <td>@user.CustomerId</td>
+                                                <td>
+                                                    <strong>@user.Username</strong>
+                                                    @if (user.CustomerId == Harmic.Utilities.Function._AccountId)
+                                                    {
+                                                        <span class="badge badge-warning ml-1">Bạn</span>
+                                                    }
+                                                </td>
+                                                <td>@(user.Email ?? "N/A")</td>
+                                                <td>@(user.Phone ?? "N/A")</td>
+                                                <td>
+                                                    @{
+                                                        var roleBadgeClass = user.RoleId switch
+                                                        {
+                                                            1 => "badge-secondary", // Khách hàng
+                                                            2 => "badge-danger",    // Admin
+                                                            4 => "badge-success",   // Người bán
+                                                            _ => "badge-info"
+                                                        };
+                                                    }
+                                                    <span class="badge @roleBadgeClass">
+                                                        @(user.Role?.RoleName ?? "N/A")
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <select class="form-control form-control-sm role-select" 
+                                                            data-user-id="@user.CustomerId" 
+                                                            @{
+                                                                if (user.CustomerId == Harmic.Utilities.Function._AccountId)
+                                                                {
+                                                                    <text>disabled</text>
+                                                                }
+                                                            }>
+                                                        @if (roles != null)
+                                                        {
+                                                            @foreach (var role in roles)
+                                                            {
+                                                                var isSelected = user.RoleId == role.RoleId;
+                                                                if (isSelected)
+                                                                {
+                                                                    <option value="@role.RoleId" selected="selected">
+                                                                        @role.RoleName
+                                                                    </option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@role.RoleId">
+                                                                        @role.RoleName
+                                                                    </option>
+                                                                }
+                                                            }
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    @if (user.IsActive)
+                                                    {
+                                                        <span class="badge badge-success">Hoạt động</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-danger">Không hoạt động</span>
+                                                    }
+                                                </td>
+                                                <td>@(user.LastLogin?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa đăng nhập")</td>
+                                                <td>
+                                                    @{
+                                                        var btnClass = user.IsActive ? "btn-warning" : "btn-success";
+                                                        var btnTitle = user.IsActive ? "Vô hiệu hóa" : "Kích hoạt";
+                                                        var btnIcon = user.IsActive ? "fa-ban" : "fa-check";
+                                                        var isDisabled = user.CustomerId == Harmic.Utilities.Function._AccountId;
+                                                    }
+                                                    <button class="btn btn-sm btn-toggle-active @btnClass" 
+                                                            data-user-id="@user.CustomerId"
+                                                            @if (isDisabled) { <text>disabled</text> }
+                                                            title="@btnTitle">
+                                                        <i class="fas @btnIcon"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="9" class="text-center">
+                                                <p class="text-muted mt-3">Không tìm thấy người dùng nào</p>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Đổi role
+            $('.role-select').on('change', function() {
+                var userId = $(this).data('user-id');
+                var roleId = $(this).val();
+                var select = $(this);
+                var oldValue = select.data('old-value') || select.find('option[selected]').val();
+
+                if (!confirm('Bạn có chắc muốn đổi role của user này?')) {
+                    select.val(oldValue);
+                    return;
+                }
+
+                // Lưu giá trị cũ
+                select.data('old-value', oldValue);
+                select.prop('disabled', true);
+
+                $.ajax({
+                    url: '/Admin/Users/ChangeRole',
+                    type: 'POST',
+                    data: {
+                        userId: userId,
+                        roleId: roleId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                            select.val(oldValue);
+                            select.prop('disabled', false);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi cập nhật role!');
+                        select.val(oldValue);
+                        select.prop('disabled', false);
+                    }
+                });
+            });
+
+            // Toggle active status
+            $('.btn-toggle-active').on('click', function() {
+                var userId = $(this).data('user-id');
+                var btn = $(this);
+                var isActive = btn.hasClass('btn-warning');
+
+                var confirmMessage = isActive 
+                    ? 'Bạn có chắc muốn vô hiệu hóa tài khoản này?' 
+                    : 'Bạn có chắc muốn kích hoạt tài khoản này?';
+
+                if (!confirm(confirmMessage)) {
+                    return;
+                }
+
+                btn.prop('disabled', true);
+
+                $.ajax({
+                    url: '/Admin/Users/ToggleActive',
+                    type: 'POST',
+                    data: {
+                        userId: userId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                            btn.prop('disabled', false);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi cập nhật trạng thái!');
+                        btn.prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+}

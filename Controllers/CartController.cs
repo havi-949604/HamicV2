@@ -49,11 +49,19 @@ namespace Harmic.Controllers
 
             if (id == null || _context.TbProducts == null)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Không tìm thấy sản phẩm!" });
+                }
                 return NotFound();
             }
 
             if (!Function.isLogin())
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập!", redirect = "/Login" });
+                }
                 Function._Message = "Vui lòng đăng nhập!";
                 Function._ReturnUrl = Url;
                 return RedirectToAction("Index", "Login");
@@ -61,11 +69,20 @@ namespace Harmic.Controllers
             var check = _context.TbProducts.FirstOrDefault(m => m.ProductId == id);
             if (check == null)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Không tìm thấy sản phẩm!" });
+                }
                 return NotFound();
             }
             if (Quantity < 1)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Số lượng không hợp lệ!" });
+                }
                 Function._Message = "Số lượng không hợp lệ!";
+                return Redirect(Url);
             }
 
             var existingCartItem = _context.TbCarts.FirstOrDefault(c => c.IdProduct == id && c.IdCustomer == Function._AccountId);
@@ -85,6 +102,14 @@ namespace Harmic.Controllers
                 _context.TbCarts.Add(miniCart);
                 _context.SaveChanges();
             }
+            
+            // Nếu là AJAX request, trả về JSON
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = true, message = $"Đã thêm {check.Title} vào giỏ hàng!" });
+            }
+            
+            // Nếu không phải AJAX, giữ nguyên hành vi cũ
             Function._Message = $"Đã thêm {check.Title} vào giỏ hàng!";
             return Redirect(Url);
 

@@ -14,10 +14,10 @@ namespace Harmic.Areas.Admin.Controllers
                 Function._Message = "Bạn cần phải đăng nhập";
                 return Redirect("/Login");
             }
-            else if (Function._RoleId == 1)
+            else if (!Function.canAccessAdmin())
             {
                 Function._Message = "Bạn không có quyền truy cập vào trang này";
-                return Redirect("/Login");
+                return Redirect("/Home");
             }
 
             return View();

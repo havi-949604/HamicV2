@@ -1,0 +1,65 @@
+@model Harmic.Models.TbPermission
+
+@{
+    ViewData["Title"] = "Xóa quyền";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewBag.active = "Permissions";
+}
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Xóa quyền</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/Admin/Home">Trang chủ</a></li>
+                        <li class="breadcrumb-item"><a href="/Admin/Permissions">Quản lý quyền</a></li>
+                        <li class="breadcrumb-item active">Xóa quyền</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-danger">
+                        <div class="card-header">
+                            <h3 class="card-title">Xác nhận xóa quyền</h3>
+                        </div>
+                        <form asp-action="Delete">
+                            <input type="hidden" asp-for="PermissionId" />
+                            <div class="card-body">
+                                <h4>Bạn có chắc muốn xóa quyền này?</h4>
+                                <dl class="row">
+                                    <dt class="col-sm-3">Tên quyền:</dt>
+                                    <dd class="col-sm-9">@Model.PermissionName</dd>
+                                    <dt class="col-sm-3">Mô tả:</dt>
+                                    <dd class="col-sm-9">@Model.Description</dd>
+                                    <dt class="col-sm-3">Controller:</dt>
+                                    <dd class="col-sm-9">@Model.ControllerName</dd>
+                                    <dt class="col-sm-3">Action:</dt>
+                                    <dd class="col-sm-9">@Model.ActionName</dd>
+                                </dl>
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> 
+                                    <strong>Cảnh báo:</strong> Xóa quyền này sẽ xóa tất cả phân quyền liên quan!
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-danger">Xóa</button>
+                                <a href="/Admin/Permissions" class="btn btn-secondary">Hủy</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+

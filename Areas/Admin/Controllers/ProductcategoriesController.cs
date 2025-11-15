@@ -23,9 +23,10 @@ namespace Harmic.Areas.Admin.Controllers
         // GET: Admin/Productcategories
         public async Task<IActionResult> Index()
         {
-            if (!Function.isLogin()){
-                Function._ReturnUrl = "/Admin/Productcategories";
-                return Redirect("/Login");
+            if (!Function.canAccessAdmin())
+            {
+                Function._Message = "Bạn không có quyền truy cập";
+                return Redirect("/Home");
             }
             return View(await _context.TbProductcategories.Include(i => i.TbProducts).OrderBy(i => i.Position).ToListAsync());
         }

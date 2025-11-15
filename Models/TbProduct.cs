@@ -43,6 +43,10 @@ public partial class TbProduct
 
     public int? Star { get; set; }
 
+    public DateTime? SaleStartDate { get; set; }
+
+    public DateTime? SaleEndDate { get; set; }
+
     public virtual TbProductcategory? CategoryProduct { get; set; }
 
     public virtual ICollection<TbCart> TbCarts { get; set; } = new List<TbCart>();

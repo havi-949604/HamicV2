@@ -1,0 +1,158 @@
+@{
+    ViewData["Title"] = "Phân quyền";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewBag.active = "RolePermissions";
+    var roles = ViewBag.Roles as List<Harmic.Models.TbRole>;
+    var permissions = ViewBag.Permissions as List<Harmic.Models.TbPermission>;
+    var rolePermissions = ViewBag.RolePermissions as Dictionary<int, List<int>>;
+}
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Phân quyền cho Role</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/Admin/Home">Trang chủ</a></li>
+                        <li class="breadcrumb-item active">Phân quyền</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Chọn Role và phân quyền</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Chọn Role</label>
+                                <select id="roleSelect" class="form-control">
+                                    <option value="0">-- Chọn Role --</option>
+                                    @if (roles != null)
+                                    {
+                                        @foreach (var role in roles)
+                                        {
+                                            <option value="@role.RoleId">@role.RoleName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div id="permissionsContainer" style="display: none;">
+                                <hr>
+                                <h5>Chọn quyền cho Role:</h5>
+                                <div class="row">
+                                    @if (permissions != null)
+                                    {
+                                        @foreach (var permission in permissions)
+                                        {
+                                            <div class="col-md-4">
+                                                <div class="form-check">
+                                                    <input class="form-check-input permission-checkbox" type="checkbox" 
+                                                           value="@permission.PermissionId" 
+                                                           id="perm_@permission.PermissionId">
+                                                    <label class="form-check-label" for="perm_@permission.PermissionId">
+                                                        <strong>@permission.PermissionName</strong><br>
+                                                        <small class="text-muted">@permission.ControllerName/@permission.ActionName</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                                <hr>
+                                <button type="button" id="savePermissions" class="btn btn-success">
+                                    <i class="fas fa-save"></i> Lưu phân quyền
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var rolePermissions = @Html.Raw(Json.Serialize(rolePermissions ?? new Dictionary<int, List<int>>()));
+
+            // Khi chọn role
+            $('#roleSelect').on('change', function() {
+                var roleId = $(this).val();
+                
+                if (roleId == 0) {
+                    $('#permissionsContainer').hide();
+                    $('.permission-checkbox').prop('checked', false);
+                    return;
+                }
+
+                $('#permissionsContainer').show();
+                
+                // Bỏ chọn tất cả
+                $('.permission-checkbox').prop('checked', false);
+                
+                // Chọn quyền của role đã chọn
+                if (rolePermissions[roleId]) {
+                    rolePermissions[roleId].forEach(function(permId) {
+                        $('#perm_' + permId).prop('checked', true);
+                    });
+                }
+            });
+
+            // Lưu phân quyền
+            $('#savePermissions').on('click', function() {
+                var roleId = $('#roleSelect').val();
+                
+                if (roleId == 0) {
+                    alert('Vui lòng chọn Role!');
+                    return;
+                }
+
+                var selectedPermissions = [];
+                $('.permission-checkbox:checked').each(function() {
+                    selectedPermissions.push($(this).val());
+                });
+
+                // Disable button
+                var btn = $(this);
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+
+                $.ajax({
+                    url: '/Admin/RolePermissions/Assign',
+                    type: 'POST',
+                    data: {
+                        roleId: roleId,
+                        permissionIds: selectedPermissions
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            // Cập nhật rolePermissions object
+                            rolePermissions[roleId] = selectedPermissions.map(Number);
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Có lỗi xảy ra khi lưu phân quyền!');
+                    },
+                    complete: function() {
+                        btn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu phân quyền');
+                    }
+                });
+            });
+        });
+    </script>
+}
+

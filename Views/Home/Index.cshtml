@@ -1,4 +1,5 @@
-﻿@{
+﻿@using Harmic.Utilities;
+@{
 
     List<TbProductcategory> productCategories = ViewBag.productCategories;
     List<TbProduct> productNew = ViewBag.productNew;
@@ -226,14 +227,27 @@
                             string sURL = $"/product/{item.Alias}-{item.ProductId}.html";
                             <div class="swiper-slide">
                                 <div class="product-item">
-                                    <div class="product-img img-zoom-effect">
+                                    <div class="product-img img-zoom-effect position-relative">
                                         <a href=@sURL>
                                             <img class="img-full" src="@item.Image" alt="Product Images">
                                         </a>
+                                        @if (Function.IsProductOnSale(item))
+                                        {
+                                            var discountPercent = (int)(((decimal)(item.Price ?? 0) - (decimal)(item.PriceSale ?? 0)) / (decimal)(item.Price ?? 1) * 100);
+                                            <span class="product-badge position-absolute top-0 end-0 bg-danger text-white px-2 py-1" style="font-size: 12px; font-weight: 600; z-index: 10; border-radius: 0 0 0 8px;">
+                                                -@discountPercent%
+                                            </span>
+                                            @if (item.SaleEndDate.HasValue)
+                                            {
+                                                <span class="sale-end-date position-absolute bottom-0 start-0 bg-warning text-dark px-2 py-1" style="font-size: 10px; font-weight: 500; z-index: 10; border-radius: 0 8px 0 0;">
+                                                    Kết thúc: @item.SaleEndDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                                </span>
+                                            }
+                                        }
                                         <div class="product-add-action">
                                             <ul>
                                                 <li>
-                                                    <a href="cart.html">
+                                                    <a href="javascript:void(0)" class="add-to-cart-link" data-product-id="@item.ProductId" data-url="/Home">
                                                         <i class="pe-7s-cart"></i>
                                                     </a>
                                                 </li>
@@ -243,7 +257,7 @@
                                                     </a>
                                                 </li>
                                                 <li>
-                                                    <a href="wishlist.html">
+                                                    <a href="javascript:void(0)" class="wishlist-toggle-link" data-product-id="@item.ProductId" data-url="/Home">
                                                         <i class="pe-7s-like"></i>
                                                     </a>
                                                 </li>
@@ -253,14 +267,14 @@
                                     <div class="product-content">
                                         <a class="product-name" href="@sURL">@item.Title</a>
                                         <div class="price-box pb-1">
-                                            @if (item.PriceSale == 0)
+                                            @if (Function.IsProductOnSale(item))
                                             {
-                                                <span class="new-price text-primary">@item.Price</span>
+                                                <span class="old-price text-primary">@Function.GetOriginalPrice(item)</span>
+                                                <span class="new-price text-danger">@Function.GetCurrentPrice(item)</span>
                                             }
                                             else
                                             {
-                                                <span class="new-price text-danger">@item.PriceSale</span>
-                                                <span class="old-price text-primary">@item.Price</span>
+                                                <span class="new-price text-primary">@Function.GetCurrentPrice(item)</span>
                                             }
                                         </div>
                                         <div class="rating-box">
@@ -362,15 +376,14 @@
                                     <div class="product-content">
                                         <a class="product-name" href="@sURL">@item.Title</a>
                                         <div class="price-box pb-1">
-
-                                            @if (item.PriceSale == 0)
+                                            @if (Function.IsProductOnSale(item))
                                             {
-                                                <span class="new-price text-primary">@item.Price</span>
+                                                <span class="old-price text-primary">@Function.GetOriginalPrice(item)</span>
+                                                <span class="new-price text-danger">@Function.GetCurrentPrice(item)</span>
                                             }
                                             else
                                             {
-                                                <span class="new-price text-danger">@item.PriceSale</span>
-                                                <span class="old-price text-primary">@item.Price</span>
+                                                <span class="new-price text-primary">@Function.GetCurrentPrice(item)</span>
                                             }
                                         </div>
                                         <div class="rating-box-wrap">
@@ -385,7 +398,7 @@
                                             <div class="product-add-action">
                                                 <ul>
                                                     <li>
-                                                        <a href="cart.html">
+                                                        <a href="javascript:void(0)" class="add-to-cart-link" data-product-id="@item.ProductId" data-url="/Home">
                                                             <i class="pe-7s-cart"></i>
                                                         </a>
                                                     </li>

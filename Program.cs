@@ -2,7 +2,7 @@
 using Harmic.Models.Momo;
 using Harmic.Services.Momo;
 using Microsoft.EntityFrameworkCore;
-using MySql.EntityFrameworkCore.Extensions;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 
 
@@ -25,7 +25,8 @@ if (string.IsNullOrEmpty(connectionString))
 
 builder.Services.AddDbContext<HarmicContext>(options =>
 {
-    options.UseMySQL(connectionString);
+    // MariaDB 10.4.32 - sử dụng AutoDetect hoặc chỉ định version string
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(10, 4, 32)));
 });
 
 
@@ -47,6 +48,9 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+// Middleware kiểm tra quyền truy cập admin
+app.UseMiddleware<Harmic.Middleware.AdminAccessMiddleware>();
 
 app.MapControllerRoute(
         name: "areas",

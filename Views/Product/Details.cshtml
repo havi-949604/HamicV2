@@ -66,14 +66,22 @@
                             <div class="single-product-content">
                                 <h2 class="title">@Model.Title</h2>
                                 <div class="price-box pb-1">
-                                    @if (Model.PriceSale == 0)
+                                    @if (Function.IsProductOnSale(Model))
                                     {
-                                        <span class="new-price text-primary">@Model.Price</span>
+                                        <span class="new-price text-danger">@Function.GetCurrentPrice(Model)</span>
+                                        <span class="old-price text-primary">@Function.GetOriginalPrice(Model)</span>
+                                        @if (Model.SaleEndDate.HasValue)
+                                        {
+                                            <div class="sale-info mt-2">
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fa fa-clock-o"></i> Khuyến mãi đến: @Model.SaleEndDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                                </span>
+                                            </div>
+                                        }
                                     }
                                     else
                                     {
-                                        <span class="new-price text-danger">@Model.PriceSale</span>
-                                        <span class="old-price text-primary">@Model.Price</span>
+                                        <span class="new-price text-primary">@Function.GetCurrentPrice(Model)</span>
                                     }
                                 </div>
                                 <div class="rating-box-wrap pb-7">
@@ -97,7 +105,7 @@
                                     @Model.Description
                                 </p>
                                 <ul class="quantity-with-btn pb-7">
-                                    <form asp-controller="Cart" asp-action="addCart" method="post">
+                                    <form id="addToCartForm" asp-controller="Cart" asp-action="addCart" method="post">
                                     <li class="quantity">
                                         <div class="cart-plus-minus">
                                             <input name="Quantity" class="cart-plus-minus-box" value="1" type="text">
@@ -110,7 +118,9 @@
                                     </li>
                                     </form>
                                     <li class="wishlist-btn-wrap">
-                                        <a class="btn rounded-0" asp-controller="Wishlist" asp-action="AddOrRemoveWishlist" asp-route-id="@Model.ProductId" asp-route-Url="@Url"> <i class="pe-7s-like" style="@(Model.TbWishlishes.Where(i => i.AccountId == Function._AccountId && i.ProductId == Model.ProductId).Count() != 0 ? "color : red" : "")"></i> </a>
+                                        <a href="javascript:void(0)" class="btn rounded-0 wishlist-toggle-link" data-product-id="@Model.ProductId" data-url="@Url">
+                                            <i class="pe-7s-like" style="@(Model.TbWishlishes.Where(i => i.AccountId == Function._AccountId && i.ProductId == Model.ProductId).Count() != 0 ? "color : red" : "")"></i>
+                                        </a>
                                     </li>
                                 </ul>
                                 <div class="product-category text-matterhorn pb-2">
@@ -368,14 +378,27 @@
                                     string sURL = $"/product/{i.Alias}-{i.ProductId}.html";
                                     <div class="swiper-slide">
                                         <div class="product-item">
-                                            <div class="product-img img-zoom-effect">
+                                            <div class="product-img img-zoom-effect position-relative">
                                                 <a href="@sURL">
                                                     <img class="img-full" src="@i.Image" alt="Product Images">
                                                 </a>
+                                                @if (Function.IsProductOnSale(i))
+                                                {
+                                                    var discountPercent = (int)(((decimal)(i.Price ?? 0) - (decimal)(i.PriceSale ?? 0)) / (decimal)(i.Price ?? 1) * 100);
+                                                    <span class="product-badge position-absolute top-0 end-0 bg-danger text-white px-2 py-1" style="font-size: 12px; font-weight: 600; z-index: 10; border-radius: 0 0 0 8px;">
+                                                        -@discountPercent%
+                                                    </span>
+                                                    @if (i.SaleEndDate.HasValue)
+                                                    {
+                                                        <span class="sale-end-date position-absolute bottom-0 start-0 bg-warning text-dark px-2 py-1" style="font-size: 10px; font-weight: 500; z-index: 10; border-radius: 0 8px 0 0;">
+                                                            Kết thúc: @i.SaleEndDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                                        </span>
+                                                    }
+                                                }
                                                 <div class="product-add-action">
                                                     <ul>
                                                         <li>
-                                                            <a href="cart.html">
+                                                            <a href="javascript:void(0)" class="add-to-cart-link" data-product-id="@i.ProductId" data-url="@Url">
                                                                 <i class="pe-7s-cart"></i>
                                                             </a>
                                                         </li>
@@ -385,7 +408,7 @@
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a href="wishlist.html">
+                                                            <a href="javascript:void(0)" class="wishlist-toggle-link" data-product-id="@i.ProductId" data-url="@Url">
                                                                 <i class="pe-7s-like"></i>
                                                             </a>
                                                         </li>
@@ -449,3 +472,73 @@
     })
 
 </script>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Xử lý form thêm vào giỏ hàng
+            $('#addToCartForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                var form = $(this);
+                var submitBtn = form.find('button[type="submit"]');
+                var originalText = submitBtn.html();
+                
+                // Disable button và hiển thị loading
+                submitBtn.prop('disabled', true).html('Đang thêm...');
+                
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // Hiển thị toastr thông báo thành công
+                            toastr.success(response.message, 'Thành công', {
+                                timeOut: 3000,
+                                closeButton: true,
+                                progressBar: true
+                            });
+                            
+                            // Reload mini cart (nếu có)
+                            if (typeof reloadMiniCart === 'function') {
+                                reloadMiniCart();
+                            } else {
+                                // Thử reload mini cart bằng cách load lại component
+                                $.get('/Cart/MiniCart', function(data) {
+                                    $('.mini-cart-wrapper').html(data);
+                                });
+                            }
+                        } else {
+                            toastr.error(response.message, 'Lỗi', {
+                                timeOut: 3000,
+                                closeButton: true,
+                                progressBar: true
+                            });
+                            
+                            if (response.redirect) {
+                                setTimeout(function() {
+                                    window.location.href = response.redirect;
+                                }, 1500);
+                            }
+                        }
+                    },
+                    error: function() {
+                        toastr.error('Có lỗi xảy ra khi thêm vào giỏ hàng!', 'Lỗi', {
+                            timeOut: 3000,
+                            closeButton: true,
+                            progressBar: true
+                        });
+                    },
+                    complete: function() {
+                        // Enable lại button
+                        submitBtn.prop('disabled', false).html(originalText);
+                    }
+                });
+            });
+        });
+    </script>
+}

@@ -33,6 +33,10 @@ namespace Harmic.Controllers
         {
             if (!Function.isLogin())
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập!", redirect = "/Login" });
+                }
                 Function._ReturnUrl = Url;
                 return RedirectToAction("Index", "Login");
             }
@@ -40,6 +44,10 @@ namespace Harmic.Controllers
             var product = _context.TbProducts.FirstOrDefault(m => m.ProductId == id);
             if (product == null)
             {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Không tìm thấy sản phẩm!" });
+                }
                 Function._Message = "Lỗi";
                 return Redirect(Url);
             }
@@ -49,6 +57,13 @@ namespace Harmic.Controllers
             {
                 _context.TbWishlishes.Remove(wishlist);
                 _context.SaveChanges();
+                
+                // Nếu là AJAX request, trả về JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = true, message = $"Đã xóa {product.Title} khỏi danh sách yêu thích", isInWishlist = false });
+                }
+                
                 Function._Message = "Đã xóa sản phẩm khỏi danh sách yêu thích";
                 return Redirect(Url);
             }
@@ -61,10 +76,119 @@ namespace Harmic.Controllers
                 };
                 _context.TbWishlishes.Add(wishlish);
                 _context.SaveChanges();
+                
+                // Nếu là AJAX request, trả về JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = true, message = $"Đã thêm {product.Title} vào danh sách yêu thích", isInWishlist = true });
+                }
+                
                 Function._Message = "Đã thêm sản phẩm vào danh sách yêu thích";
-
                 return Redirect(Url);
             }
+        }
+
+        public IActionResult AddToWishlist(int id, string Url)
+        {
+            if (!Function.isLogin())
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập!", redirect = "/Login" });
+                }
+                Function._ReturnUrl = Url;
+                return RedirectToAction("Index", "Login");
+            }
+
+            var product = _context.TbProducts.FirstOrDefault(m => m.ProductId == id);
+            if (product == null)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Không tìm thấy sản phẩm!" });
+                }
+                Function._Message = "Lỗi";
+                return Redirect(Url);
+            }
+
+            var wishlist = _context.TbWishlishes.FirstOrDefault(m => m.ProductId == id && m.AccountId == Function._AccountId);
+            if (wishlist == null)
+            {
+                TbWishlish wishlish = new TbWishlish
+                {
+                    ProductId = id,
+                    AccountId = Function._AccountId,
+                };
+                _context.TbWishlishes.Add(wishlish);
+                _context.SaveChanges();
+                
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = true, message = $"Đã thêm {product.Title} vào danh sách yêu thích", isInWishlist = true });
+                }
+                
+                Function._Message = "Đã thêm sản phẩm vào danh sách yêu thích";
+            }
+            else
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = true, message = "Sản phẩm đã có trong danh sách yêu thích", isInWishlist = true });
+                }
+            }
+
+            return Redirect(Url);
+        }
+
+        public IActionResult RemoveFromWishlist(int id, string Url = null)
+        {
+            if (!Function.isLogin())
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Vui lòng đăng nhập!", redirect = "/Login" });
+                }
+                if (!string.IsNullOrEmpty(Url))
+                {
+                    Function._ReturnUrl = Url;
+                }
+                return RedirectToAction("Index", "Login");
+            }
+
+            var product = _context.TbProducts.FirstOrDefault(m => m.ProductId == id);
+            if (product == null)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Không tìm thấy sản phẩm!" });
+                }
+                Function._Message = "Lỗi";
+                if (!string.IsNullOrEmpty(Url))
+                {
+                    return Redirect(Url);
+                }
+                return RedirectToAction("Index");
+            }
+
+            var wishlist = _context.TbWishlishes.FirstOrDefault(m => m.ProductId == id && m.AccountId == Function._AccountId);
+            if (wishlist != null)
+            {
+                _context.TbWishlishes.Remove(wishlist);
+                _context.SaveChanges();
+                
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = true, message = $"Đã xóa {product.Title} khỏi danh sách yêu thích", isInWishlist = false });
+                }
+                
+                Function._Message = "Đã xóa sản phẩm khỏi danh sách yêu thích";
+            }
+
+            if (!string.IsNullOrEmpty(Url))
+            {
+                return Redirect(Url);
+            }
+            return RedirectToAction("Index");
         }
 
     }

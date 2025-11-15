@@ -1,0 +1,90 @@
+@model IEnumerable<Harmic.Models.TbPermission>
+
+@{
+    ViewData["Title"] = "Quản lý quyền";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewBag.active = "Permissions";
+}
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Quản lý quyền</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/Admin/Home">Trang chủ</a></li>
+                        <li class="breadcrumb-item active">Quản lý quyền</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Danh sách quyền</h3>
+                            <div class="card-tools">
+                                <a href="/Admin/Permissions/Create" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus"></i> Thêm quyền mới
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên quyền</th>
+                                        <th>Mô tả</th>
+                                        <th>Controller</th>
+                                        <th>Action</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@item.PermissionId</td>
+                                            <td>@item.PermissionName</td>
+                                            <td>@item.Description</td>
+                                            <td>@item.ControllerName</td>
+                                            <td>@item.ActionName</td>
+                                            <td>
+                                                @if (item.IsActive)
+                                                {
+                                                    <span class="badge badge-success">Hoạt động</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-danger">Không hoạt động</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a href="/Admin/Permissions/Edit/@item.PermissionId" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i> Sửa
+                                                </a>
+                                                <a href="/Admin/Permissions/Delete/@item.PermissionId" class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa quyền này?');">
+                                                    <i class="fas fa-trash"></i> Xóa
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+

@@ -14,4 +14,6 @@ public partial class TbRole
     public virtual ICollection<TbAccount> TbAccounts { get; set; } = new List<TbAccount>();
 
     public virtual ICollection<TbCustomer> TbCustomers { get; set; } = new List<TbCustomer>();
+
+    public virtual ICollection<TbRolePermission> TbRolePermissions { get; set; } = new List<TbRolePermission>();
 }

@@ -53,6 +53,10 @@ public partial class HarmicContext : DbContext
 
     public virtual DbSet<TbRole> TbRoles { get; set; }
 
+    public virtual DbSet<TbPermission> TbPermissions { get; set; }
+
+    public virtual DbSet<TbRolePermission> TbRolePermissions { get; set; }
+
     public virtual DbSet<TbWishlish> TbWishlishes { get; set; }
 
 //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -673,6 +677,12 @@ public partial class HarmicContext : DbContext
             entity.Property(e => e.Star)
                 .HasDefaultValueSql("'NULL'")
                 .HasColumnType("int(11)");
+            entity.Property(e => e.SaleStartDate)
+                .HasDefaultValueSql("'NULL'")
+                .HasColumnType("datetime");
+            entity.Property(e => e.SaleEndDate)
+                .HasDefaultValueSql("'NULL'")
+                .HasColumnType("datetime");
             entity.Property(e => e.Title)
                 .HasMaxLength(250)
                 .HasDefaultValueSql("'NULL'");
@@ -802,6 +812,58 @@ public partial class HarmicContext : DbContext
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("tb_wishlish_ibfk_2");
+        });
+
+        modelBuilder.Entity<TbPermission>(entity =>
+        {
+            entity.HasKey(e => e.PermissionId).HasName("PRIMARY");
+
+            entity.ToTable("tb_permission");
+
+            entity.Property(e => e.PermissionId).HasColumnType("int(11)");
+            entity.Property(e => e.PermissionName)
+                .HasMaxLength(250)
+                .HasDefaultValueSql("'NULL'");
+            entity.Property(e => e.Description)
+                .HasMaxLength(500)
+                .HasDefaultValueSql("'NULL'");
+            entity.Property(e => e.ControllerName)
+                .HasMaxLength(100)
+                .HasDefaultValueSql("'NULL'");
+            entity.Property(e => e.ActionName)
+                .HasMaxLength(100)
+                .HasDefaultValueSql("'NULL'");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValueSql("1")
+                .HasColumnType("tinyint(1)");
+        });
+
+        modelBuilder.Entity<TbRolePermission>(entity =>
+        {
+            entity.HasKey(e => e.RolePermissionId).HasName("PRIMARY");
+
+            entity.ToTable("tb_rolepermission");
+
+            entity.HasIndex(e => e.RoleId, "FK_RolePermission_Role");
+            entity.HasIndex(e => e.PermissionId, "FK_RolePermission_Permission");
+
+            entity.Property(e => e.RolePermissionId).HasColumnType("int(11)");
+            entity.Property(e => e.RoleId)
+                .HasDefaultValueSql("'NULL'")
+                .HasColumnType("int(11)");
+            entity.Property(e => e.PermissionId)
+                .HasDefaultValueSql("'NULL'")
+                .HasColumnType("int(11)");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.TbRolePermissions)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_RolePermission_Role");
+
+            entity.HasOne(d => d.Permission).WithMany(p => p.TbRolePermissions)
+                .HasForeignKey(d => d.PermissionId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_RolePermission_Permission");
         });
 
         OnModelCreatingPartial(modelBuilder);
