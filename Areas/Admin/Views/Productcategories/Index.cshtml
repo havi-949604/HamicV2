@@ -1,0 +1,105 @@
+﻿@model IEnumerable<Harmic.Models.TbProductcategory>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewBag.active = "ProductCategories";
+}
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Quản lý danh mục sản phẩm</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Simple Tables</li>
+                    </ol>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><a asp-action="Create">Thêm mới</a></h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Tên</th>
+                                        <th>Mô tả</th>
+                                        <th>Biểu tượng</th>
+                                        <th>Vị trí</th>
+                                        <th>Số lượng</th>
+                                        <th>Hiện</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <td>@(i++)</td>
+                                                <td>@Html.DisplayFor(modelItem => item.Title)</td>
+                                                <td>@Html.DisplayFor(modelItem => item.Description)</td>
+                                                <td><img src="@Html.DisplayFor(modelItem => item.Icon)" width="50px" height="50px" /></td>
+                                                <td>
+                                                    <a asp-action="MoveUp" asp-route-id="@item.CategoryProductId" class="btn btn-secondary"><i class="fas fa-arrow-up"></i></a>
+                                                    <a asp-action="MoveDown" asp-route-id="@item.CategoryProductId" class="btn btn-secondary mt-1"><i class="fas fa-arrow-down"></i></a>
+                                                </td>
+                                                <td>@item.TbProducts.Count()</td>
+                                                <td>
+                                                    @if (item.IsActive)
+                                                    {
+                                                        <a asp-action="ChangeShow" asp-route-id="@item.CategoryProductId" class="btn btn-primary"><i class="fas fa-eye"></i></a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <a asp-action="ChangeShow" asp-route-id="@item.CategoryProductId" class="btn btn-warning"><i class="fas fa-eye-slash"></i></a>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a asp-action="Edit" asp-route-id="@item.CategoryProductId" class="btn btn-primary">Sửa</a>
+
+                                                        <a asp-action="Details" asp-route-id="@item.CategoryProductId" class="btn btn-info">Chi tiết</a>
+
+                                                        <a asp-action="Delete" asp-route-id="@item.CategoryProductId" class="btn btn-danger">Xóa</a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-footer clearfix">
+                        </div>
+                    </div>
+                    <!-- /.card -->
+
+                </div>
+
+            </div>
+
+
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>

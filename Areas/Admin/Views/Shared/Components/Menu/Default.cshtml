@@ -1,0 +1,45 @@
+﻿@model List<TbAdminmenu>
+
+<nav class="mt-2">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+        @foreach (var item in Model.Where(item => item.ParentId == 0))
+        {
+            if (Model.Where(i => i.ParentId == item.MenuId).Count() == 0)
+            {
+                <li class="nav-item">
+                    <a href="/Admin/@item.Alias" class="nav-link @(item.Alias == ViewBag.active ? "active" : "")">
+                        <i class="nav-icon @item.Icon"></i>
+
+                        <p class="text">@item.Title</p>
+                    </a>
+                </li>
+
+            }
+            else
+            {
+                <li class="nav-item @(Model.Where(i => i.ParentId == item.MenuId).Any(i => i.Alias == ViewBag.active) ? "menu-open " : "")">
+                    <a href="#" class="nav-link @(Model.Where(i => i.ParentId == item.MenuId).Any(i => i.Alias == ViewBag.active) ? "active " : "")">
+                        <i class="nav-icon @item.Icon"></i>
+                        <p>
+                            @item.Title
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview">
+                        @foreach (var itemchild in Model.Where(i => i.ParentId == item.MenuId))
+                        {
+                            <li class="nav-item">
+                                <a href="/Admin/@itemchild.Alias" class="nav-link @(ViewBag.active == itemchild.Alias ? "active" : "")">
+                                    <i class="@itemchild.Icon nav-icon"></i>
+                                    <p>@itemchild.Title</p>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+
+            }
+        }
+    </ul>
+</nav>

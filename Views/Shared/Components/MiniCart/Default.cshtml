@@ -1,0 +1,99 @@
+﻿@using Harmic.Utilities;
+@model IEnumerable<TbCart>
+
+@if (Function.isLogin())
+{
+    <ul>
+        <li class="dropdown d-none d-md-block">
+            <button class="btn btn-link dropdown-toggle ht-btn p-0" type="button" id="settingButton" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="pe-7s-users"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingButton">
+                @if (Function._RoleId != 1)
+                {
+                    <li><a class="dropdown-item" href="/Admin">Trang quản trị</a></li>
+                }
+                <li><a class="dropdown-item" href="/MyAccount">Cài đặt tài khoản</a></li>
+                <li><a class="dropdown-item" href="/Logout">Đăng xuất</a></li>
+            </ul>
+        </li>
+        <li class="d-none d-md-block">
+            <a href="/wishlist">
+                <i class="pe-7s-like"></i>
+            </a>
+        </li>
+        <li class="d-block d-lg-none">
+            <a href="#searchBar" class="search-btn toolbar-btn">
+                <i class="pe-7s-search"></i>
+            </a>
+        </li>
+        <li class="minicart-wrap me-3 me-lg-0">
+            <a href="#miniCart" class="minicart-btn toolbar-btn">
+                <i class="pe-7s-shopbag"></i>
+                <span class="quantity">@Model.Count()</span>
+            </a>
+        </li>
+
+        <li class="mobile-menu_wrap d-block d-lg-none">
+            <a href="#mobileMenu" class="mobile-menu_btn toolbar-btn pl-0">
+                <i class="pe-7s-menu"></i>
+            </a>
+        </li>
+    </ul>
+
+}
+else
+{
+
+    <a href="/login" class="btn btn-primary">Đăng nhập</a>
+
+}
+<div class="offcanvas-minicart_wrapper" id="miniCart">
+    <div class="harmic-offcanvas-body">
+        <div class="minicart-content">
+            <div class="minicart-heading">
+                <h4 class="mb-0">Shopping Cart</h4>
+                <a href="#" class="button-close"><i class="pe-7s-close"></i></a>
+            </div>
+            @{
+                int? amount = 0;
+            }
+            <ul class="minicart-list">
+                @foreach (var item in Model)
+                {
+
+                    <li class="minicart-product">
+                        <a class="product-item_remove" href="#">
+                            <i class="pe-7s-close"></i>
+                        </a>
+                        <a href="shop.html" class="product-item_img">
+                            <img class="img-full" src="@item.IdProductNavigation.Image" alt="Product Image">
+                        </a>
+                        <div class="product-item_content">
+                            <a class="product-item_title" href="shop.html">@item.IdProductNavigation.Title</a>
+                            @if (item.IdProductNavigation.PriceSale == 0)
+                            {
+                                amount += (item.Quantity) * (item.IdProductNavigation.Price);
+
+                                <span class="product-item_quantity">@item.Quantity x @item.IdProductNavigation.Price</span>
+                            }
+                            else
+                            {
+                                amount += (item.Quantity) * (item.IdProductNavigation.PriceSale);
+                                <span class="product-item_quantity">@item.Quantity x @item.IdProductNavigation.PriceSale</span>
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+        <div class="minicart-item_total">
+            <span>Subtotal</span>
+            <span class="ammount">@amount</span>
+        </div>
+        <div class="group-btn_wrap d-grid gap-2">
+            <a href="/cart" class="btn btn-secondary btn-primary-hover">View Cart</a>
+            <a href="checkout.html" class="btn btn-secondary btn-primary-hover">Checkout</a>
+        </div>
+    </div>
+</div>

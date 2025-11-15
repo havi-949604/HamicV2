@@ -1,0 +1,41 @@
+﻿@model IEnumerable<Harmic.Models.TbMenu>
+
+@foreach (var item in Model.Where(i => i.Levels == 1))
+{
+	bool kt = false;
+	foreach (var i in Model.Where(m => m.Levels == 2))
+	{
+		if (i.ParentId == item.MenuId)
+		{
+			kt = true;
+			break;
+		}
+
+	}
+	if (kt == true)
+	{
+		<li class="drop-holder">
+			<a href="@item.Alias">
+				@item.Title
+				<i class="fa fa-chevron-down"></i>
+			</a>
+			<ul class="drop-menu">
+				@foreach (var i in Model.Where(m => m.Levels == 2).Where(m => m.ParentId == item.MenuId).OrderBy(m => m.Position))
+				{
+				<li>
+					<a href="@i.Alias">@i.Title</a>
+				</li>
+				}
+			</ul>
+		</li>
+
+	}
+	else
+	{
+		<li class="drop-holder">
+			<a href="/@item.Alias">
+				@item.Title
+			</a>
+		</li>
+	}
+}

@@ -1,0 +1,127 @@
+﻿@model Harmic.Models.TbHomeslider
+@{
+    ViewData["Title"] = "Thêm banner trang chủ";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewBag.active = "HomeSlider";
+}
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Thêm banner trang chủ</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/Admin">Bảng điều khiển</a></li>
+                        <li class="breadcrumb-item active">Thêm banner trang chủ</li>
+                    </ol>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <!-- left column -->
+                <div class="col-md-12">
+                    <!-- general form elements -->
+                    <div class="card card-primary">
+                        <div class="card-header">
+                            <h3 class="card-title">Thêm banner trang chủ</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <!-- form start -->
+                        <form asp-action="Create">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label asp-for="Title" class="control-label">Tiêu đề</label>
+                                    <input asp-for="Title" class="form-control">
+                                    <span asp-validation-for="Title" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="AboveImg" class="control-label">Ảnh trên</label>
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <button type="button" class="btn btn-success" onclick="openDialog('AboveImg')">Chọn ảnh</button>
+                                        </div>
+                                        <input type="text" class="form-control" id="AboveImg" asp-for="AboveImg" aria-describedby="button-addon2">
+                                    </div>
+                                    <span asp-validation-for="AboveImg" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="BelowImg" class="control-label">Ảnh dưới</label>
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <button type="button" class="btn btn-success" onclick="openDialog('BelowImg')">Chọn ảnh</button>
+                                        </div>
+                                        <input type="text" class="form-control" id="BelowImg" asp-for="BelowImg" aria-describedby="button-addon2">
+                                    </div>
+                                    <span asp-validation-for="BelowImg" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="MainImg" class="control-label">Ảnh chính</label>
+                                    <div class="input-group mb-3">
+                                        <div class="input-group-prepend">
+                                            <button type="button" class="btn btn-success" onclick="openDialog('MainImg')">Chọn ảnh</button>
+                                        </div>
+                                        <input type="text" class="form-control" id="MainImg" asp-for="MainImg" aria-describedby="button-addon2">
+                                    </div>
+                                    <span asp-validation-for="MainImg" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="BigTxt" class="control-label">Chữ lớn</label>
+                                    <textarea asp-for="BigTxt" class="form-control"></textarea>
+                                    <span asp-validation-for="BigTxt" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="SmallTxt" class="control-label">Chữ nhỏ</label>
+                                    <input asp-for="SmallTxt" class="form-control">
+                                    <span asp-validation-for="SmallTxt" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="TextBtn" class="control-label">Chữ trên nút</label>
+                                    <input asp-for="TextBtn" class="form-control">
+                                    <span asp-validation-for="TextBtn" class="text-danger"></span>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="UrlBtn" class="control-label">Đường dẫn nút</label>
+                                    <input asp-for="UrlBtn" class="form-control">
+                                    <span asp-validation-for="UrlBtn" class="text-danger"></span>
+                                </div>
+                                <div class="form-check form-group">
+                                    <label class="form-check-label">
+                                        <input class="form-check-input" asp-for="IsActive" />Hiển thị
+                                    </label>
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+
+                            <div class="card-footer">
+                                <button type="submit" class="btn btn-primary">Thêm</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- /.card -->
+                </div>
+                <!--/.col (left) -->
+            </div>
+            <!-- /.row -->
+        </div><!-- /.container-fluid -->
+
+    </section>
+    <!-- /.content -->
+</div>
+@{
+    var summerNote = new Harmic.Areas.Admin.Models.SummerNote("#BigTxt");
+    <partial name="_SummerNote" model="summerNote" />
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

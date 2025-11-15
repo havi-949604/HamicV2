@@ -1,0 +1,119 @@
+﻿@model List<TbCart>
+<!-- Begin Main Content Area -->
+<main class="main-content">
+    <div class="breadcrumb-area breadcrumb-height" data-bg-image="assets/images/breadcrumb/bg/1-1-1920x373.jpg">
+        <div class="container h-100">
+            <div class="row h-100">
+                <div class="col-lg-12">
+                    <div class="breadcrumb-item">
+                        <h2 class="breadcrumb-heading">Product Related</h2>
+                        <ul>
+                            <li>
+                                <a href="/Home">Trang chủ <i class="pe-7s-angle-right"></i></a>
+                            </li>
+                            <li>Cart</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="cart-area section-space-y-axis-100">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    @if (Model.Count == 0)
+                    {
+                        <h5>Giỏ hàng của bạn đang trống!</h5>
+
+                    }
+                    else
+                    {
+                        <div class="table-content table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th class="product_remove">remove</th>
+                                        <th class="product-thumbnail">images</th>
+                                        <th class="cart-product-name">Product</th>
+                                        <th class="product-price">Unit Price</th>
+                                        <th class="product-quantity">Quantity</th>
+                                        <th class="product-subtotal">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="product_remove">
+                                                <a href="javascript:void(0)">
+                                                    <i class="pe-7s-close" title="Remove"></i>
+                                                </a>
+                                            </td>
+                                            <td class="product-thumbnail">
+                                                <a href="javascript:void(0)">
+                                                    <img src="@item.IdProductNavigation.Image" alt="Cart Thumbnail">
+                                                </a>
+                                            </td>
+                                            <td class="product-name"><a href="javascript:void(0)">@item.IdProductNavigation.Title</a></td>
+                                            <td class="product-price"><span class="amount">@item.IdProductNavigation.Price</span></td>
+                                            <td class="quantity">
+                                                <div class="cart-plus-minus">
+                                                    <input class="cart-plus-minus-box" value="@item.Quantity" type="number">
+                                                </div>
+                                            </td>
+                                            @if (item.IdProductNavigation.PriceSale == 0)
+                                            {
+                                                <td class="product-subtotal"><span class="amount">@(item.IdProductNavigation.Price* item.Quantity)</span></td>
+                                            }
+                                            else
+                                            {
+                                                <td class="product-subtotal"><span class="amount">@(item.IdProductNavigation.PriceSale* item.Quantity)</span></td>
+                                            }
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-5 ml-auto">
+                                <div class="cart-page-total">
+                                    <h2>Thanh toán</h2>
+                                    <ul>
+                                        <li>Tổng tiền: <span>@ViewBag.TotalPrice</span></li>
+                                    </ul>
+
+                                    <br />
+                                    <form method="POST" asp-action="PaymentMomo" asp-controller="Payment">
+
+                                        <input type="hidden" name="Amount" value="@ViewBag.TotalPrice" />
+                                        <input type="hidden" name="OrderId" value="@Guid.NewGuid().ToString()" />
+
+                                        <input type="hidden" name="OrderInfo" value="Thanh toán đặt hàng qua Momo tại Harmic" />
+                                        <button class="btn btn-danger" name="PayUrl" type="submit">Thanh toán với Momo</button>
+                                    </form>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<!-- Main Content Area End Here -->
+@* <form method="POST" asp-action="CreatePaymentUrl" asp-controller="Payment"> *@
+@* 	<input type="hidden" name="FullName" value="abc" /> *@
+@* 	<input type="hidden" name="Amount" value="10000" /> *@
+@* 	<input type="hidden" name="OrderId" value="@Guid.NewGuid().ToString()" /> *@
+
+@* 	<input type="hidden" name="OrderInfo" value="Thanh toán đặt hàng qua Momo tại HieuTanStore" /> *@
+
+
+@* 	<br /> *@
+@* 	<button class="btn btn-danger" name="PayUrl" type="submit">Pay with MoMo</button> *@
+@* </form> *@

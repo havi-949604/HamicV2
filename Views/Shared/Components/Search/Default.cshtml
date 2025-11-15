@@ -1,0 +1,16 @@
+﻿@model Harmic.ViewModels.ProductSearchViewModel
+@{
+	IEnumerable<TbProductcategory> ProductCategories = ViewBag.Categories;
+}
+<div class="header-search-area d-none d-lg-block">
+	<form asp-action="Index" asp-controller="Product" class="header-searchbox">
+		<select asp-for="CategoryId" class="nice-select select-search-category wide">
+			<option value="0">Tất cả</option>
+			@foreach (var item in ProductCategories) {
+				<option value="@item.CategoryProductId">@item.Title</option>
+			}
+		</select>
+		<input class="input-field" type="text" asp-for="SearchText" placeholder="Bạn cần tìm gì?">
+		<button class="btn btn-outline-whisper btn-primary-hover" type="submit"><i class="pe-7s-search"></i></button>
+	</form>
+</div>
