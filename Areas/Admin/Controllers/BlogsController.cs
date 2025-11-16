@@ -3,10 +3,12 @@ using Harmic.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Harmic.Utilities;
+using Harmic.Attributes;
 
 namespace Harmic.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [AuthorizePermission("Blogs", "Index")]
     public class BlogsController : Controller
     {
         private readonly HarmicContext _context;

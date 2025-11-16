@@ -1,16 +1,16 @@
 ﻿<!-- Begin Main Content Area -->
 <main class="main-content">
-	<div class="breadcrumb-area breadcrumb-height" data-bg-image="assets/images/breadcrumb/bg/1-1-1920x373.jpg">
+	<div class="breadcrumb-area breadcrumb-height" data-bg-image="/assets/images/breadcrumb/bg/1-1-1920x373.jpg">
 		<div class="container h-100">
 			<div class="row h-100">
 				<div class="col-lg-12">
 					<div class="breadcrumb-item">
-						<h2 class="breadcrumb-heading">Product Related</h2>
+						<h2 class="breadcrumb-heading">Đăng ký</h2>
 						<ul>
 							<li>
-								<a href="index.html">Home <i class="pe-7s-angle-right"></i></a>
+								<a href="/home">Trang chủ <i class="pe-7s-angle-right"></i></a>
 							</li>
-							<li>Login | Register</li>
+							<li>Đăng ký</li>
 						</ul>
 					</div>
 				</div>
@@ -19,36 +19,447 @@
 	</div>
 	<div class="login-register-area section-space-y-axis-100">
 		<div class="container">
-			<div class="row">
-				<div class="col-lg-12">
-					<form asp-action="Index">
+			<div class="row justify-content-center">
+				<div class="col-lg-6 col-md-8">
+					<div class="login-form-wrapper">
 						<div class="login-form">
-							<h4 class="login-title">Register</h4>
-							<div class="row">
-								<label>Username</label>
-								<input type="text" name="Username" placeholder="Name">
+							<div class="login-header text-center mb-5">
+								<h3 class="login-title mb-3">Tạo tài khoản mới</h3>
+								<p class="login-subtitle">Chào mừng bạn đến với Harmic! Vui lòng điền thông tin để đăng ký.</p>
 							</div>
-							<div class="col-md-12">
-								<label>Email Address*</label>
-								<input type="email" name="Email" placeholder="Email Address">
-							</div>
-							<div class="col-md-6">
-								<label>Password</label>
-								<input type="password" name="Password" placeholder="Password">
-							</div>
-							<div class="col-md-6">
-								<label>Confirm Password</label>
-								<input type="password" name="ConfirmPassword" placeholder="Confirm Password">
-							</div>
-							<div class="col-12">
-								<h5>Nếu đã có tài khoản, <a href="/login">Đăng nhập</a></h5>
-								<button type="submit" class="btn btn-custom-size lg-size btn-secondary btn-primary-hover rounded-0">Register</button>
-							</div>
+							<form id="registerForm" novalidate>
+								<div class="row">
+									<div class="col-lg-12 mb-4">
+										<label class="form-label">Tên người dùng <span class="text-danger">*</span></label>
+										<div class="input-wrapper">
+											<i class="pe-7s-user input-icon input-icon-left"></i>
+											<input name="Username" id="Username" type="text" class="form-control" placeholder="Nhập tên người dùng của bạn" required>
+											<div class="invalid-feedback">Vui lòng nhập tên người dùng</div>
+										</div>
+									</div>
+									<div class="col-lg-12 mb-4">
+										<label class="form-label">Email <span class="text-danger">*</span></label>
+										<div class="input-wrapper">
+											<i class="pe-7s-mail input-icon input-icon-left"></i>
+											<input name="Email" id="Email" type="email" class="form-control" placeholder="Nhập địa chỉ email của bạn" required>
+											<div class="invalid-feedback">Vui lòng nhập địa chỉ email hợp lệ</div>
+										</div>
+									</div>
+									<div class="col-lg-12 mb-4">
+										<label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+										<div class="input-wrapper">
+											<i class="pe-7s-lock input-icon input-icon-left"></i>
+											<input name="Password" id="Password" type="password" class="form-control" placeholder="Nhập mật khẩu của bạn" required minlength="6">
+											<span class="password-toggle" id="passwordToggle">
+												<i class="pe-7s-look"></i>
+											</span>
+											<div class="invalid-feedback">Mật khẩu phải có ít nhất 6 ký tự</div>
+										</div>
+									</div>
+									<div class="col-lg-12 mb-4">
+										<label class="form-label">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+										<div class="input-wrapper">
+											<i class="pe-7s-lock input-icon input-icon-left"></i>
+											<input name="ConfirmPassword" id="ConfirmPassword" type="password" class="form-control" placeholder="Nhập lại mật khẩu" required>
+											<span class="password-toggle" id="confirmPasswordToggle">
+												<i class="pe-7s-look"></i>
+											</span>
+											<div class="invalid-feedback">Mật khẩu xác nhận không khớp</div>
+										</div>
+									</div>
+									<div class="col-lg-12 mb-4">
+										<button type="submit" class="btn btn-custom-size lg-size btn-secondary btn-primary-hover rounded-0 w-100" id="registerBtn">
+											<span class="btn-text">Đăng ký</span>
+											<span class="btn-loading d-none">
+												<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+												Đang xử lý...
+											</span>
+										</button>
+									</div>
+									<div class="col-lg-12 text-center">
+										<p class="register-link mb-0">
+											Đã có tài khoản? <a href="/login" class="text-primary fw-bold">Đăng nhập ngay</a>
+										</p>
+									</div>
+								</div>
+							</form>
 						</div>
-					</form>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </main>
 <!-- Main Content Area End Here -->
+
+<style>
+	.login-form-wrapper {
+		background: #fff;
+		border-radius: 15px;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+		padding: 50px 40px;
+		margin: 30px 0;
+		transition: all 0.3s ease;
+	}
+
+	.login-form-wrapper:hover {
+		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+	}
+
+	.login-header .login-title {
+		font-size: 32px;
+		font-weight: 700;
+		color: #333;
+		margin-bottom: 10px;
+	}
+
+	.login-header .login-subtitle {
+		color: #666;
+		font-size: 15px;
+		margin-bottom: 0;
+	}
+
+	.form-label {
+		font-weight: 600;
+		color: #333;
+		margin-bottom: 8px;
+		font-size: 14px;
+		display: block;
+	}
+
+	.input-wrapper {
+		position: relative;
+	}
+
+	.input-wrapper .form-control {
+		padding: 14px 15px 14px 45px;
+		border: 2px solid #e5e5e5;
+		border-radius: 8px;
+		font-size: 15px;
+		transition: all 0.3s ease;
+		height: 50px;
+	}
+
+	.input-wrapper #Password,
+	.input-wrapper #ConfirmPassword {
+		padding-right: 45px;
+	}
+
+	.input-wrapper .form-control:focus {
+		border-color: #bac34e;
+		box-shadow: 0 0 0 0.2rem rgba(186, 195, 78, 0.25);
+		outline: none;
+	}
+
+	.input-wrapper .form-control.is-invalid {
+		border-color: #dc3545;
+	}
+
+	.input-wrapper .form-control.is-valid {
+		border-color: #28a745;
+	}
+
+	.input-icon {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		color: #999;
+		font-size: 18px;
+		pointer-events: none;
+		z-index: 5;
+	}
+
+	.input-icon-left {
+		left: 15px;
+	}
+
+	.password-toggle {
+		position: absolute;
+		right: 15px;
+		top: 50%;
+		transform: translateY(-50%);
+		cursor: pointer;
+		color: #999;
+		font-size: 18px;
+		z-index: 10;
+		transition: color 0.3s ease;
+	}
+
+	.password-toggle:hover {
+		color: #bac34e;
+	}
+
+	#registerBtn {
+		height: 50px;
+		font-weight: 600;
+		font-size: 16px;
+		letter-spacing: 0.5px;
+		transition: all 0.3s ease;
+		border: none;
+	}
+
+	#registerBtn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 5px 15px rgba(186, 195, 78, 0.4);
+	}
+
+	#registerBtn:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+		transform: none;
+	}
+
+	.register-link {
+		font-size: 14px;
+		color: #666;
+	}
+
+	.register-link a {
+		text-decoration: none;
+		transition: color 0.3s ease;
+	}
+
+	.register-link a:hover {
+		color: #bac34e !important;
+		text-decoration: underline;
+	}
+
+	.invalid-feedback {
+		display: none;
+		font-size: 13px;
+		margin-top: 5px;
+		color: #dc3545;
+	}
+
+	.form-control.is-invalid ~ .invalid-feedback {
+		display: block;
+	}
+
+	@@media (max-width: 768px) {
+		.login-form-wrapper {
+			padding: 35px 25px;
+			margin: 20px 0;
+		}
+
+		.login-header .login-title {
+			font-size: 26px;
+		}
+	}
+</style>
+
+@section Scripts {
+	<script>
+		$(document).ready(function() {
+			// Toggle password visibility for Password field
+			$('#passwordToggle').on('click', function() {
+				var passwordInput = $('#Password');
+				var icon = $(this).find('i');
+				
+				if (passwordInput.attr('type') === 'password') {
+					passwordInput.attr('type', 'text');
+					icon.removeClass('pe-7s-look').addClass('pe-7s-lock');
+				} else {
+					passwordInput.attr('type', 'password');
+					icon.removeClass('pe-7s-lock').addClass('pe-7s-look');
+				}
+			});
+
+			// Toggle password visibility for Confirm Password field
+			$('#confirmPasswordToggle').on('click', function() {
+				var passwordInput = $('#ConfirmPassword');
+				var icon = $(this).find('i');
+				
+				if (passwordInput.attr('type') === 'password') {
+					passwordInput.attr('type', 'text');
+					icon.removeClass('pe-7s-look').addClass('pe-7s-lock');
+				} else {
+					passwordInput.attr('type', 'password');
+					icon.removeClass('pe-7s-lock').addClass('pe-7s-look');
+				}
+			});
+
+			// Real-time validation
+			$('#Username, #Email, #Password, #ConfirmPassword').on('blur', function() {
+				validateField(this);
+			});
+
+			// Validate password match in real-time
+			$('#ConfirmPassword').on('input', function() {
+				var password = $('#Password').val();
+				var confirmPassword = $(this).val();
+				
+				if (confirmPassword && password !== confirmPassword) {
+					$(this).removeClass('is-valid').addClass('is-invalid');
+					$(this).siblings('.invalid-feedback').text('Mật khẩu xác nhận không khớp');
+				} else if (confirmPassword && password === confirmPassword) {
+					$(this).removeClass('is-invalid').addClass('is-valid');
+				}
+			});
+
+			$('#Password').on('input', function() {
+				var password = $(this).val();
+				var confirmPassword = $('#ConfirmPassword').val();
+				
+				if (confirmPassword && password !== confirmPassword) {
+					$('#ConfirmPassword').removeClass('is-valid').addClass('is-invalid');
+					$('#ConfirmPassword').siblings('.invalid-feedback').text('Mật khẩu xác nhận không khớp');
+				} else if (confirmPassword && password === confirmPassword) {
+					$('#ConfirmPassword').removeClass('is-invalid').addClass('is-valid');
+				}
+			});
+
+			function validateField(field) {
+				var $field = $(field);
+				var isValid = field.checkValidity();
+				
+				// Special validation for confirm password
+				if (field.id === 'ConfirmPassword') {
+					var password = $('#Password').val();
+					var confirmPassword = $(field).val();
+					if (confirmPassword && password !== confirmPassword) {
+						isValid = false;
+						$field.siblings('.invalid-feedback').text('Mật khẩu xác nhận không khớp');
+					}
+				}
+				
+				if (isValid) {
+					$field.removeClass('is-invalid').addClass('is-valid');
+				} else {
+					$field.removeClass('is-valid').addClass('is-invalid');
+				}
+			}
+
+			// Form submission
+			$('#registerForm').on('submit', function(e) {
+				e.preventDefault();
+				
+				// Validate all fields
+				var isValid = true;
+				$('#Username, #Email, #Password, #ConfirmPassword').each(function() {
+					validateField(this);
+					if (!this.checkValidity()) {
+						isValid = false;
+					}
+				});
+
+				// Check password match
+				var password = $('#Password').val();
+				var confirmPassword = $('#ConfirmPassword').val();
+				
+				if (password !== confirmPassword) {
+					$('#ConfirmPassword').removeClass('is-valid').addClass('is-invalid');
+					$('#ConfirmPassword').siblings('.invalid-feedback').text('Mật khẩu xác nhận không khớp');
+					toastr.error('Mật khẩu xác nhận không khớp', 'Lỗi xác thực');
+					isValid = false;
+				}
+
+				// Check password length
+				if (password && password.length < 6) {
+					$('#Password').removeClass('is-valid').addClass('is-invalid');
+					toastr.error('Mật khẩu phải có ít nhất 6 ký tự', 'Lỗi xác thực');
+					isValid = false;
+				}
+
+				if (!isValid) {
+					toastr.error('Vui lòng điền đầy đủ thông tin hợp lệ', 'Lỗi xác thực');
+					return;
+				}
+
+				// Disable button and show loading
+				var $btn = $('#registerBtn');
+				$btn.prop('disabled', true);
+				$btn.find('.btn-text').addClass('d-none');
+				$btn.find('.btn-loading').removeClass('d-none');
+
+				// Get form data
+				var formData = {
+					Username: $('#Username').val().trim(),
+					Email: $('#Email').val().trim(),
+					Password: $('#Password').val(),
+					ConfirmPassword: $('#ConfirmPassword').val()
+				};
+
+				// Submit via AJAX
+				$.ajax({
+					url: '/Register/Index',
+					type: 'POST',
+					data: formData,
+					dataType: 'json',
+					headers: {
+						'X-Requested-With': 'XMLHttpRequest'
+					},
+					success: function(response) {
+						if (response.success) {
+							toastr.success(response.message || 'Đăng ký thành công!', 'Thành công');
+							
+							// Redirect after short delay
+							setTimeout(function() {
+								if (response.redirectUrl) {
+									window.location.href = response.redirectUrl;
+								} else {
+									window.location.href = '/Login';
+								}
+							}, 1500);
+						} else {
+							// Show error message
+							toastr.error(response.message || 'Đăng ký thất bại. Vui lòng thử lại.', 'Lỗi đăng ký');
+							
+							// Re-enable button
+							$btn.prop('disabled', false);
+							$btn.find('.btn-text').removeClass('d-none');
+							$btn.find('.btn-loading').addClass('d-none');
+							
+							// Highlight error fields
+							if (response.fieldErrors) {
+								response.fieldErrors.forEach(function(field) {
+									$('#' + field).addClass('is-invalid');
+								});
+							}
+						}
+					},
+					error: function(xhr, status, error) {
+						var errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại sau.';
+						
+						// Try to parse error response
+						if (xhr.responseJSON && xhr.responseJSON.message) {
+							errorMessage = xhr.responseJSON.message;
+						} else if (xhr.responseText) {
+							try {
+								var jsonResponse = JSON.parse(xhr.responseText);
+								if (jsonResponse.message) {
+									errorMessage = jsonResponse.message;
+								}
+							} catch(e) {
+								// Not JSON, use default message
+							}
+						}
+						
+						// Check for specific HTTP errors
+						if (xhr.status === 500) {
+							errorMessage = 'Lỗi máy chủ. Vui lòng thử lại sau.';
+						} else if (xhr.status === 400) {
+							errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+						} else if (xhr.status === 0) {
+							errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+						}
+						
+						toastr.error(errorMessage, 'Lỗi đăng ký');
+						
+						// Re-enable button
+						$btn.prop('disabled', false);
+						$btn.find('.btn-text').removeClass('d-none');
+						$btn.find('.btn-loading').addClass('d-none');
+						
+						// Log error for debugging
+						console.error('Register error:', {
+							status: xhr.status,
+							statusText: xhr.statusText,
+							responseText: xhr.responseText,
+							error: error
+						});
+					}
+				});
+			});
+		});
+	</script>
+}

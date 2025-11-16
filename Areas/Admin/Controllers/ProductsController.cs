@@ -44,7 +44,18 @@ namespace Harmic.Areas.Admin.Controllers
                 return Redirect("/Home");
             }
             var harmicContext = _context.TbProducts.Include(t => t.CategoryProduct);
-            return View(await harmicContext.ToListAsync());
+            var products = await harmicContext.ToListAsync();
+            
+            // Tính số lượng đã bán cho mỗi sản phẩm
+            var soldQuantities = _context.TbOrderdetails
+                .Where(od => od.ProductId != null)
+                .GroupBy(od => od.ProductId)
+                .Select(g => new { ProductId = g.Key, TotalSold = g.Sum(od => od.Quantity ?? 0) })
+                .ToDictionary(x => x.ProductId, x => x.TotalSold);
+            
+            ViewBag.SoldQuantities = soldQuantities;
+            
+            return View(products);
         }
 
         // GET: Admin/Products/Create
@@ -151,6 +162,73 @@ namespace Harmic.Areas.Admin.Controllers
             }
             ViewData["CategoryProductId"] = new SelectList(_context.TbProductcategories, "CategoryProductId", "Title", tbProduct.CategoryProductId);
             return View(tbProduct);
+        }
+
+        // POST: Admin/Products/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            if (!Function.canAccessAdmin())
+            {
+                Function._Message = "Bạn không có quyền truy cập";
+                return Redirect("/Home");
+            }
+
+            try
+            {
+                var tbProduct = await _context.TbProducts.FindAsync(id);
+                if (tbProduct == null)
+                {
+                    Function._Message = "Không tìm thấy sản phẩm cần xóa";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                // Xóa các bản ghi liên quan trước
+                // Xóa giỏ hàng chứa sản phẩm này
+                var carts = _context.TbCarts.Where(c => c.IdProduct == id).ToList();
+                if (carts.Any())
+                {
+                    _context.TbCarts.RemoveRange(carts);
+                }
+
+                // Xóa đánh giá sản phẩm
+                var reviews = _context.TbProductreviews.Where(r => r.ProductId == id).ToList();
+                if (reviews.Any())
+                {
+                    _context.TbProductreviews.RemoveRange(reviews);
+                }
+
+                // Xóa yêu thích
+                var wishlists = _context.TbWishlishes.Where(w => w.ProductId == id).ToList();
+                if (wishlists.Any())
+                {
+                    _context.TbWishlishes.RemoveRange(wishlists);
+                }
+
+                // Set ProductId = null trong OrderDetail để giữ lịch sử đơn hàng
+                var orderDetails = _context.TbOrderdetails.Where(od => od.ProductId == id).ToList();
+                if (orderDetails.Any())
+                {
+                    foreach (var orderDetail in orderDetails)
+                    {
+                        orderDetail.ProductId = null;
+                    }
+                    _context.TbOrderdetails.UpdateRange(orderDetails);
+                }
+
+                // Xóa sản phẩm
+                _context.TbProducts.Remove(tbProduct);
+                await _context.SaveChangesAsync();
+
+                Function._Message = "Đã xóa sản phẩm thành công";
+            }
+            catch (Exception ex)
+            {
+                Function._Message = $"Lỗi khi xóa sản phẩm: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         private bool TbProductExists(int id)

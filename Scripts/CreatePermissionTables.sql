@@ -33,6 +33,9 @@ INSERT INTO `tb_permission` (`PermissionName`, `Description`, `ControllerName`, 
 ('Sửa sản phẩm', 'Quyền sửa sản phẩm', 'Products', 'Edit', 1),
 ('Xóa sản phẩm', 'Quyền xóa sản phẩm', 'Products', 'Delete', 1),
 ('Quản lý danh mục sản phẩm', 'Quyền quản lý danh mục sản phẩm', 'Productcategories', 'Index', 1),
+('Quản lý danh mục bài viết', 'Quyền quản lý danh mục bài viết', 'Categories', 'Index', 1),
+('Thêm danh mục bài viết', 'Quyền thêm danh mục bài viết', 'Categories', 'Create', 1),
+('Sửa danh mục bài viết', 'Quyền sửa danh mục bài viết', 'Categories', 'Edit', 1),
 ('Quản lý bài viết', 'Quyền quản lý bài viết', 'Blogs', 'Index', 1),
 ('Thêm bài viết', 'Quyền thêm bài viết', 'Blogs', 'Create', 1),
 ('Sửa bài viết', 'Quyền sửa bài viết', 'Blogs', 'Edit', 1), 
@@ -49,10 +52,10 @@ INSERT INTO `tb_rolepermission` (`RoleId`, `PermissionId`)
 SELECT 2, `PermissionId` FROM `tb_permission` WHERE `IsActive` = 1
 ON DUPLICATE KEY UPDATE `RoleId` = `RoleId`;
 
--- Phân quyền cho Role 4 (Người bán - Chỉ quản lý sản phẩm)
+-- Phân quyền cho Role 4 (Người bán - Quản lý sản phẩm và bài viết)
 INSERT INTO `tb_rolepermission` (`RoleId`, `PermissionId`)
 SELECT 4, `PermissionId` FROM `tb_permission` 
-WHERE `ControllerName` IN ('Products', 'Productcategories') AND `IsActive` = 1
+WHERE `ControllerName` IN ('Products', 'Productcategories', 'Blogs', 'Categories') AND `IsActive` = 1
 ON DUPLICATE KEY UPDATE `RoleId` = `RoleId`;
 
 -- Phân quyền cho Role 1 (Khách hàng - Chỉ truy cập trang chủ)

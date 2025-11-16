@@ -1,0 +1,220 @@
+@model IEnumerable<Harmic.Models.TbProductreview>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewBag.active = "ProductReviews";
+}
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Quản lý đánh giá sản phẩm</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Đánh giá</li>
+                    </ol>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Danh sách đánh giá</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Khách hàng</th>
+                                        <th>Sản phẩm</th>
+                                        <th>Đánh giá</th>
+                                        <th>Số sao</th>
+                                        <th>Ngày đánh giá</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int i = 1;
+                                        foreach (var item in Model)
+                                        {
+                                            <tr>
+                                                <td>@(i++)</td>
+                                                <td>
+                                                    @if (item.Customer != null)
+                                                    {
+                                                        <div class="d-flex align-items-center">
+                                                            @if (!string.IsNullOrEmpty(item.Customer.Avatar))
+                                                            {
+                                                                <img src="@item.Customer.Avatar" alt="@item.Customer.Username" class="img-circle elevation-2" width="40" height="40" style="margin-right: 10px;">
+                                                            }
+                                                            <span>@item.Customer.Username</span>
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Đã xóa</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (item.Product != null)
+                                                    {
+                                                        string productUrl = $"/product/{item.Product.Alias}-{item.Product.ProductId}.html";
+                                                        <a href="@productUrl" target="_blank">
+                                                            @item.Product.Title
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Đã xóa</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(item.Detail))
+                                                    {
+                                                        <span>@(item.Detail.Length > 50 ? item.Detail.Substring(0, 50) + "..." : item.Detail)</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Không có nội dung</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (item.Star.HasValue)
+                                                    {
+                                                        int stars = item.Star.Value;
+                                                        for (int s = 1; s <= 5; s++)
+                                                        {
+                                                            if (s <= stars)
+                                                            {
+                                                                <i class="fas fa-star text-warning"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="far fa-star text-muted"></i>
+                                                            }
+                                                        }
+                                                        <span class="ml-2">(@stars/5)</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Chưa đánh giá</span>
+                                                    }
+                                                </td>
+                                                <td>@(item.CreatedDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
+                                                <td>
+                                                    @if (item.IsActive)
+                                                    {
+                                                        <span class="badge badge-success">Đã duyệt</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-warning">Chưa duyệt</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <form asp-action="ChangeStatus" asp-route-id="@item.ProductReviewId" method="post" style="display: inline;">
+                                                            @Html.AntiForgeryToken()
+                                                            @if (item.IsActive)
+                                                            {
+                                                                <button type="submit" class="btn btn-warning btn-sm" title="Ẩn đánh giá">
+                                                                    <i class="fas fa-eye-slash"></i> Ẩn
+                                                                </button>
+                                                            }
+                                                            else
+                                                            {
+                                                                <button type="submit" class="btn btn-success btn-sm" title="Duyệt đánh giá">
+                                                                    <i class="fas fa-check"></i> Duyệt
+                                                                </button>
+                                                            }
+                                                        </form>
+                                                        <form id="deleteReviewForm_@item.ProductReviewId" asp-action="Delete" asp-route-id="@item.ProductReviewId" method="post" style="display: inline;">
+                                                            @Html.AntiForgeryToken()
+                                                            <button type="button" class="btn btn-danger btn-sm delete-review-btn" data-review-id="@item.ProductReviewId" data-review-detail="@(item.Detail ?? "")">
+                                                                <i class="fas fa-trash"></i> Xóa
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+</div>
+
+<!-- Modal xác nhận xóa -->
+<div class="modal fade" id="deleteReviewModal" tabindex="-1" role="dialog" aria-labelledby="deleteReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteReviewModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn xóa đánh giá này?</p>
+                <p id="reviewDetailPreview" class="text-muted small"></p>
+                <p class="text-danger"><small>Hành động này không thể hoàn tác!</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteReviewBtn">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var deleteReviewId = null;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var deleteButtons = document.querySelectorAll('.delete-review-btn');
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                deleteReviewId = this.getAttribute('data-review-id');
+                var reviewDetail = this.getAttribute('data-review-detail');
+                if (reviewDetail && reviewDetail.length > 0) {
+                    var preview = reviewDetail.length > 100 ? reviewDetail.substring(0, 100) + '...' : reviewDetail;
+                    document.getElementById('reviewDetailPreview').textContent = '"' + preview + '"';
+                } else {
+                    document.getElementById('reviewDetailPreview').textContent = '';
+                }
+                $('#deleteReviewModal').modal('show');
+            });
+        });
+        
+        document.getElementById('confirmDeleteReviewBtn').addEventListener('click', function() {
+            if (deleteReviewId) {
+                document.getElementById('deleteReviewForm_' + deleteReviewId).submit();
+            }
+        });
+    });
+</script>
+

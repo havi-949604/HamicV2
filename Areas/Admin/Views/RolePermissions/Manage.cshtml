@@ -115,7 +115,7 @@
                 var roleId = $('#roleSelect').val();
                 
                 if (roleId == 0) {
-                    alert('Vui lòng chọn Role!');
+                    showWarningDialog('Vui lòng chọn Role!');
                     return;
                 }
 
@@ -126,29 +126,64 @@
 
                 // Disable button
                 var btn = $(this);
+                var originalHtml = btn.html();
                 btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+
+                // Hàm reset button
+                var resetButton = function() {
+                    btn.prop('disabled', false).html(originalHtml);
+                };
 
                 $.ajax({
                     url: '/Admin/RolePermissions/Assign',
                     type: 'POST',
+                    timeout: 30000, // 30 giây timeout
+                    dataType: 'json',
                     data: {
                         roleId: roleId,
                         permissionIds: selectedPermissions
                     },
                     success: function(response) {
-                        if (response.success) {
-                            alert(response.message);
+                        resetButton(); // Reset button ngay khi có response
+                        
+                        // Kiểm tra response
+                        console.log('Response:', response);
+                        
+                        if (response && response.success === true) {
                             // Cập nhật rolePermissions object
                             rolePermissions[roleId] = selectedPermissions.map(Number);
+                            
+                            // Hiển thị dialog thành công
+                            var message = response.message || 'Phân quyền thành công';
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công',
+                                text: message,
+                                confirmButtonText: 'Đóng',
+                                confirmButtonColor: '#28a745'
+                            });
                         } else {
-                            alert(response.message);
+                            var errorMsg = (response && response.message) ? response.message : 'Có lỗi xảy ra khi lưu phân quyền';
+                            showErrorDialog(errorMsg);
                         }
                     },
-                    error: function() {
-                        alert('Có lỗi xảy ra khi lưu phân quyền!');
+                    error: function(xhr, status, error) {
+                        resetButton(); // Reset button khi có lỗi
+                        
+                        var errorMessage = 'Có lỗi xảy ra khi lưu phân quyền!';
+                        if (status === 'timeout') {
+                            errorMessage = 'Request timeout. Vui lòng thử lại!';
+                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        } else if (xhr.status === 0) {
+                            errorMessage = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối!';
+                        }
+                        
+                        showErrorDialog(errorMessage);
                     },
                     complete: function() {
-                        btn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu phân quyền');
+                        // Đảm bảo button luôn được reset
+                        resetButton();
                     }
                 });
             });

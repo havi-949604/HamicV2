@@ -20,11 +20,23 @@ namespace Harmic.Areas.Admin.Controllers
         {
             if (!Function.isLogin() || !Function.isAdmin())
             {
+                // Nếu là AJAX request, trả về JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền truy cập" });
+                }
                 Function._Message = "Bạn không có quyền truy cập";
-                return Redirect("/Login");
+                return Redirect("/Admin/Home");
             }
 
-            var permissions = _context.TbPermissions.OrderBy(p => p.ControllerName).ThenBy(p => p.ActionName).ToList();
+            // Loại bỏ trùng lặp: chỉ hiển thị permission đầu tiên theo ControllerName và ActionName
+            var permissions = _context.TbPermissions
+                .OrderBy(p => p.ControllerName)
+                .ThenBy(p => p.ActionName)
+                .ThenBy(p => p.PermissionId)
+                .GroupBy(p => new { p.ControllerName, p.ActionName })
+                .Select(g => g.First())
+                .ToList();
             return View(permissions);
         }
 

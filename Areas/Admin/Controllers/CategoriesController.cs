@@ -2,10 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Harmic.Models;
 using Harmic.Utilities;
+using Harmic.Attributes;
 
 namespace Harmic.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [AuthorizePermission("Categories", "Index")]
     public class CategoriesController : Controller
     {
         private readonly HarmicContext _context;
@@ -15,17 +17,10 @@ namespace Harmic.Areas.Admin.Controllers
         }
         public IActionResult Index()
         {
-            if (!Function.isLogin())
+            if (!Function.canAccessAdmin())
             {
-                Function._Message = "Bạn chưa đăng nhập!";
-                Function._ReturnUrl = Request.Path;
-                return Redirect("/Login");
-            }
-            ;
-            if (!Function.isAdmin())
-            {
-                Function._Message = "Bạn không có quyền truy cập trang này!";
-                return Redirect("/Home");
+                Function._Message = "Bạn không có quyền truy cập";
+                return Redirect("/Admin/Home");
             }
             var categories = _context.TbCategories.Include(c => c.TbBlogs).OrderBy(i=>i.Position).ToList();
 
@@ -34,17 +29,15 @@ namespace Harmic.Areas.Admin.Controllers
 
         public IActionResult Create()
         {
-            if (!Function.isLogin())
+            if (!Function.canAccessAdmin())
             {
-                Function._Message = "Bạn chưa đăng nhập!";
-                Function._ReturnUrl = Request.Path;
-                return Redirect("/Login");
-            }
-            ;
-            if (!Function.isAdmin())
-            {
-                Function._Message = "Bạn không có quyền truy cập trang này!";
-                return Redirect("/Home");
+                // Nếu là AJAX request, trả về JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền truy cập" });
+                }
+                Function._Message = "Bạn không có quyền truy cập";
+                return Redirect("/Admin/Home");
             }
             return View();
         }
@@ -65,17 +58,15 @@ namespace Harmic.Areas.Admin.Controllers
 
         public IActionResult Edit(int id)
         {
-            if (!Function.isLogin())
+            if (!Function.canAccessAdmin())
             {
-                Function._Message = "Bạn chưa đăng nhập!";
-                Function._ReturnUrl = Request.Path;
-                return Redirect("/Login");
-            }
-            ;
-            if (!Function.isAdmin())
-            {
-                Function._Message = "Bạn không có quyền truy cập trang này!";
-                return Redirect("/Home");
+                // Nếu là AJAX request, trả về JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền truy cập" });
+                }
+                Function._Message = "Bạn không có quyền truy cập";
+                return Redirect("/Admin/Home");
             }
             var category = _context.TbCategories.Find(id);
             if (category == null)
@@ -100,16 +91,15 @@ namespace Harmic.Areas.Admin.Controllers
 
         public IActionResult MoveUp(int id)
         {
-            if (!Function.isLogin())
+            if (!Function.canAccessAdmin())
             {
-                Function._Message = "Bạn chưa đăng nhập!";
-                Function._ReturnUrl = "/Admin/Categories";
-                return Redirect("/Login");
-            }
-            if (!Function.isAdmin())
-            {
-                Function._Message = "Bạn không có quyền truy cập trang này!";
-                return Redirect("/Home");
+                // Nếu là AJAX request, trả về JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền truy cập" });
+                }
+                Function._Message = "Bạn không có quyền truy cập";
+                return Redirect("/Admin/Home");
             }
             var category = _context.TbCategories.Find(id);
             if (category == null)
@@ -132,16 +122,15 @@ namespace Harmic.Areas.Admin.Controllers
 
         public IActionResult MoveDown(int id) { 
             
-            if (!Function.isLogin())
+            if (!Function.canAccessAdmin())
             {
-                Function._Message = "Bạn chưa đăng nhập!";
-                Function._ReturnUrl = "/Admin/Categories";
-                return Redirect("/Login");
-            }
-            if (!Function.isAdmin())
-            {
-                Function._Message = "Bạn không có quyền truy cập trang này!";
-                return Redirect("/Home");
+                // Nếu là AJAX request, trả về JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền truy cập" });
+                }
+                Function._Message = "Bạn không có quyền truy cập";
+                return Redirect("/Admin/Home");
             }
             var category = _context.TbCategories.Find(id);
             if (category == null)

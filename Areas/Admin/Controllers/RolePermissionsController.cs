@@ -20,8 +20,13 @@ namespace Harmic.Areas.Admin.Controllers
         {
             if (!Function.isLogin() || !Function.isAdmin())
             {
+                // Nếu là AJAX request, trả về JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền truy cập" });
+                }
                 Function._Message = "Bạn không có quyền truy cập";
-                return Redirect("/Login");
+                return Redirect("/Admin/Home");
             }
 
             var rolePermissions = _context.TbRolePermissions
@@ -39,12 +44,24 @@ namespace Harmic.Areas.Admin.Controllers
         {
             if (!Function.isLogin() || !Function.isAdmin())
             {
+                // Nếu là AJAX request, trả về JSON
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền truy cập" });
+                }
                 Function._Message = "Bạn không có quyền truy cập";
-                return Redirect("/Login");
+                return Redirect("/Admin/Home");
             }
 
             ViewBag.Roles = _context.TbRoles.ToList();
-            ViewBag.Permissions = _context.TbPermissions.Where(p => p.IsActive).ToList();
+            // Lấy danh sách quyền, loại bỏ trùng lặp theo ControllerName và ActionName
+            ViewBag.Permissions = _context.TbPermissions
+                .Where(p => p.IsActive)
+                .OrderBy(p => p.ControllerName)
+                .ThenBy(p => p.ActionName)
+                .GroupBy(p => new { p.ControllerName, p.ActionName })
+                .Select(g => g.OrderBy(p => p.PermissionId).First())
+                .ToList();
             
             // Lấy danh sách quyền hiện có của từng role
             var rolePermissions = _context.TbRolePermissions

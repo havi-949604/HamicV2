@@ -130,6 +130,8 @@
                                                 <td>
                                                     <select class="form-control form-control-sm role-select" 
                                                             data-user-id="@user.CustomerId" 
+                                                            data-original-role-id="@user.RoleId"
+                                                            id="roleSelect_@user.CustomerId"
                                                             @{
                                                                 if (user.CustomerId == Harmic.Utilities.Function._AccountId)
                                                                 {
@@ -196,6 +198,11 @@
                                 </tbody>
                             </table>
                         </div>
+                        <div class="card-footer">
+                            <button type="button" id="btnSaveAllRoles" class="btn btn-success">
+                                <i class="fas fa-save"></i> Lưu tất cả thay đổi role
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -206,44 +213,129 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Đổi role
-            $('.role-select').on('change', function() {
-                var userId = $(this).data('user-id');
-                var roleId = $(this).val();
-                var select = $(this);
-                var oldValue = select.data('old-value') || select.find('option[selected]').val();
-
-                if (!confirm('Bạn có chắc muốn đổi role của user này?')) {
-                    select.val(oldValue);
+            // Xử lý click button Lưu tất cả
+            $('#btnSaveAllRoles').on('click', function() {
+                var btn = $(this);
+                var changes = [];
+                
+                // Thu thập tất cả các thay đổi role
+                $('.role-select').each(function() {
+                    var select = $(this);
+                    var userId = select.data('user-id');
+                    var originalRoleId = select.data('original-role-id');
+                    var currentRoleId = select.val();
+                    
+                    // Lưu giá trị gốc nếu chưa có
+                    if (!originalRoleId) {
+                        var savedOriginal = select.attr('data-original-role-id') || select.find('option[selected]').val() || select.val();
+                        select.data('original-role-id', savedOriginal);
+                        originalRoleId = savedOriginal;
+                    }
+                    
+                    // Nếu có thay đổi, thêm vào danh sách
+                    if (currentRoleId != originalRoleId) {
+                        changes.push({
+                            userId: userId,
+                            roleId: currentRoleId,
+                            originalRoleId: originalRoleId,
+                            select: select
+                        });
+                    }
+                });
+                
+                // Nếu không có thay đổi nào
+                if (changes.length === 0) {
+                    showWarningDialog('Không có thay đổi nào để lưu!');
                     return;
                 }
-
-                // Lưu giá trị cũ
-                select.data('old-value', oldValue);
-                select.prop('disabled', true);
-
-                $.ajax({
-                    url: '/Admin/Users/ChangeRole',
-                    type: 'POST',
-                    data: {
-                        userId: userId,
-                        roleId: roleId
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            alert(response.message);
-                            location.reload();
-                        } else {
-                            alert(response.message);
-                            select.val(oldValue);
-                            select.prop('disabled', false);
+                
+                // Disable button
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+                
+                // Lưu từng thay đổi
+                var savePromises = [];
+                var successCount = 0;
+                var errorCount = 0;
+                var errorMessages = [];
+                
+                changes.forEach(function(change) {
+                    var promise = $.ajax({
+                        url: '/Admin/Users/ChangeRole',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: {
+                            userId: change.userId,
+                            roleId: change.roleId
                         }
-                    },
-                    error: function() {
-                        alert('Có lỗi xảy ra khi cập nhật role!');
-                        select.val(oldValue);
-                        select.prop('disabled', false);
+                    }).then(function(response) {
+                        if (response && response.success) {
+                            successCount++;
+                            // Cập nhật original role id
+                            change.select.data('original-role-id', change.roleId);
+                        } else {
+                            errorCount++;
+                            errorMessages.push(response ? response.message : 'Lỗi không xác định');
+                        }
+                    }).catch(function(xhr) {
+                        errorCount++;
+                        var errorMsg = 'Có lỗi xảy ra';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        errorMessages.push(errorMsg);
+                    });
+                    
+                    savePromises.push(promise);
+                });
+                
+                // Đợi tất cả các request hoàn thành
+                Promise.all(savePromises).then(function() {
+                    btn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu tất cả thay đổi role');
+                    
+                    console.log('Save completed. Success:', successCount, 'Errors:', errorCount);
+                    
+                    // Hiển thị kết quả
+                    if (errorCount === 0) {
+                        // Tất cả thành công - hiển thị dialog trực tiếp
+                        var message = 'Đã lưu thành công ' + successCount + ' thay đổi role!';
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công',
+                            text: message,
+                            confirmButtonText: 'Đóng',
+                            confirmButtonColor: '#28a745'
+                        }).then((result) => {
+                            location.reload();
+                        });
+                    } else if (successCount > 0) {
+                        // Một số thành công, một số lỗi
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Cảnh báo',
+                            text: 'Đã lưu thành công ' + successCount + ' thay đổi. Có ' + errorCount + ' lỗi xảy ra.',
+                            confirmButtonText: 'Đóng',
+                            confirmButtonColor: '#ffc107'
+                        });
+                    } else {
+                        // Tất cả đều lỗi
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi',
+                            text: 'Có lỗi xảy ra khi lưu: ' + errorMessages.join(', '),
+                            confirmButtonText: 'Đóng',
+                            confirmButtonColor: '#dc3545'
+                        });
                     }
+                }).catch(function(error) {
+                    console.error('Error in Promise.all:', error);
+                    btn.prop('disabled', false).html('<i class="fas fa-save"></i> Lưu tất cả thay đổi role');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Có lỗi xảy ra khi lưu!',
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#dc3545'
+                    });
                 });
             });
 
@@ -257,31 +349,45 @@
                     ? 'Bạn có chắc muốn vô hiệu hóa tài khoản này?' 
                     : 'Bạn có chắc muốn kích hoạt tài khoản này?';
 
-                if (!confirm(confirmMessage)) {
-                    return;
-                }
-
-                btn.prop('disabled', true);
-
-                $.ajax({
-                    url: '/Admin/Users/ToggleActive',
-                    type: 'POST',
-                    data: {
-                        userId: userId
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            alert(response.message);
-                            location.reload();
-                        } else {
-                            alert(response.message);
-                            btn.prop('disabled', false);
-                        }
-                    },
-                    error: function() {
-                        alert('Có lỗi xảy ra khi cập nhật trạng thái!');
-                        btn.prop('disabled', false);
+                Swal.fire({
+                    icon: 'question',
+                    title: 'Xác nhận',
+                    text: confirmMessage,
+                    showCancelButton: true,
+                    confirmButtonText: 'Đồng ý',
+                    cancelButtonText: 'Hủy',
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33'
+                }).then((result) => {
+                    if (!result.isConfirmed) {
+                        return;
                     }
+
+                    btn.prop('disabled', true);
+
+                    $.ajax({
+                        url: '/Admin/Users/ToggleActive',
+                        type: 'POST',
+                        data: {
+                            userId: userId
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                showSuccessDialog(response.message, function() {
+                                    location.reload();
+                                });
+                            } else {
+                                showErrorDialog(response.message, function() {
+                                    btn.prop('disabled', false);
+                                });
+                            }
+                        },
+                        error: function() {
+                            showErrorDialog('Có lỗi xảy ra khi cập nhật trạng thái!', function() {
+                                btn.prop('disabled', false);
+                            });
+                        }
+                    });
                 });
             });
         });

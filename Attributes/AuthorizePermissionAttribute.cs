@@ -82,6 +82,18 @@ namespace Harmic.Attributes
                     if (!hasPermission)
                     {
                         Function._Message = "Bạn không có quyền thực hiện hành động này";
+                        
+                        // Nếu là AJAX request, trả về JSON thay vì redirect
+                        if (context.HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                        {
+                            context.Result = new JsonResult(new { 
+                                success = false, 
+                                message = "Bạn không có quyền thực hiện hành động này",
+                                redirect = "/Admin/Home"
+                            });
+                            return;
+                        }
+                        
                         context.Result = new RedirectResult("/Admin/Home");
                         return;
                     }
