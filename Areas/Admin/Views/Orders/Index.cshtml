@@ -1,0 +1,123 @@
+@model IEnumerable<Harmic.Models.TbOrder>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    Layout = "~/Areas/Admin/Views/Shared/_Layout.cshtml";
+    ViewBag.active = "Orders";
+}
+
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Quản lý đơn hàng</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="/Admin/Home">Trang chủ</a></li>
+                        <li class="breadcrumb-item active">Đơn hàng</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Danh sách đơn hàng</h3>
+                        </div>
+                        <!-- /.card-header -->
+                        <div class="card-body">
+                            <!-- Search and Filter -->
+                            <form method="get" action="/Admin/Orders" class="mb-3">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <input type="text" name="search" class="form-control" placeholder="Tìm kiếm theo mã đơn, tên, SĐT..." value="@ViewBag.Search">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select name="statusId" class="form-control">
+                                            <option value="0">Tất cả trạng thái</option>
+                                            @foreach (var status in ViewBag.OrderStatuses as List<Harmic.Models.TbOrderstatus>)
+                                            {
+                                                <option value="@status.OrderStatusId" selected="@(ViewBag.SelectedStatusId != null && ViewBag.SelectedStatusId.ToString() == status.OrderStatusId.ToString())">
+                                                    @status.Name
+                                                </option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="submit" class="btn btn-primary">Tìm kiếm</button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>STT</th>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>Số điện thoại</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Số lượng</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày đặt</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int i = 1;
+                                    }
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>@(i++)</td>
+                                            <td><strong>@Html.DisplayFor(modelItem => item.Code)</strong></td>
+                                            <td>@Html.DisplayFor(modelItem => item.CustomerName)</td>
+                                            <td>@Html.DisplayFor(modelItem => item.Phone)</td>
+                                            <td>@string.Format("{0:N0}", item.TotalAmount) đ</td>
+                                            <td>@Html.DisplayFor(modelItem => item.Quanlity)</td>
+                                            <td>
+                                                @if (item.OrderStatus != null)
+                                                {
+                                                    <span class="badge badge-info">@item.OrderStatus.Name</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">Chưa xác định</span>
+                                                }
+                                            </td>
+                                            <td>@(item.CreatedDate?.ToString("dd/MM/yyyy HH:mm"))</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Details" asp-route-id="@item.OrderId" class="btn btn-info btn-sm">Chi tiết</a>
+                                                    <a asp-action="Edit" asp-route-id="@item.OrderId" class="btn btn-primary btn-sm">Cập nhật</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                    @if (!Model.Any())
+                                    {
+                                        <tr>
+                                            <td colspan="9" class="text-center">Không có đơn hàng nào</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.card-body -->
+                    </div>
+                    <!-- /.card -->
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+

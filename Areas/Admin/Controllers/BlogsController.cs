@@ -35,7 +35,28 @@ namespace Harmic.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult Create(TbBlog blog)
         {
-            blog.AccountId = Function._AccountId;
+            // Tìm AccountId từ email hoặc username của người dùng đã đăng nhập
+            int? accountId = null;
+            if (!string.IsNullOrEmpty(Function._Email))
+            {
+                var account = _context.TbAccounts.FirstOrDefault(a => a.Email == Function._Email);
+                if (account != null)
+                {
+                    accountId = account.AccountId;
+                }
+            }
+            
+            // Nếu không tìm thấy bằng email, thử tìm bằng username
+            if (accountId == null && !string.IsNullOrEmpty(Function._FullName))
+            {
+                var account = _context.TbAccounts.FirstOrDefault(a => a.Username == Function._FullName);
+                if (account != null)
+                {
+                    accountId = account.AccountId;
+                }
+            }
+
+            blog.AccountId = accountId;
             blog.CreatedDate = DateTime.Now;
             blog.Alias = Function.TitleSlugGenerationAlias(blog.Title);
             blog.CreatedBy = Function._FullName;

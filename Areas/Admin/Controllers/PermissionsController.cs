@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Harmic.Models;
 using Harmic.Utilities;
+using System.Reflection;
 
 namespace Harmic.Areas.Admin.Controllers
 {
@@ -13,6 +14,88 @@ namespace Harmic.Areas.Admin.Controllers
         public PermissionsController(HarmicContext context)
         {
             _context = context;
+        }
+
+        // Lấy danh sách tất cả controllers và actions
+        private Dictionary<string, List<string>> GetAllControllersAndActions()
+        {
+            var controllers = new Dictionary<string, List<string>>();
+            
+            try
+            {
+                // Lấy tất cả các assembly
+                var assembly = Assembly.GetExecutingAssembly();
+                
+                // Lấy tất cả các controller trong Areas/Admin
+                var adminControllers = assembly.GetTypes()
+                    .Where(t => t.IsClass 
+                        && t.Namespace != null 
+                        && t.Namespace.Contains("Harmic.Areas.Admin.Controllers")
+                        && t.Name.EndsWith("Controller")
+                        && typeof(Controller).IsAssignableFrom(t))
+                    .ToList();
+
+                foreach (var controller in adminControllers)
+                {
+                    var controllerName = controller.Name.Replace("Controller", "");
+                    var actions = new List<string>();
+
+                    // Lấy tất cả các public methods có return type là IActionResult hoặc Task<IActionResult>
+                    var methods = controller.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                        .Where(m => 
+                            (typeof(IActionResult).IsAssignableFrom(m.ReturnType) || 
+                             (m.ReturnType.IsGenericType && 
+                              m.ReturnType.GetGenericTypeDefinition() == typeof(Task<>) &&
+                              m.ReturnType.GetGenericArguments().Length > 0 &&
+                              typeof(IActionResult).IsAssignableFrom(m.ReturnType.GetGenericArguments()[0]))) &&
+                            !m.IsSpecialName &&
+                            !m.GetCustomAttributes(typeof(NonActionAttribute), false).Any() &&
+                            !m.IsAbstract)
+                        .Select(m => m.Name)
+                        .Distinct()
+                        .OrderBy(a => a)
+                        .ToList();
+
+                    if (methods.Any())
+                    {
+                        controllers[controllerName] = methods;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Nếu reflection thất bại, sử dụng danh sách hardcode
+                return GetHardcodedControllersAndActions();
+            }
+
+            // Nếu không tìm thấy controllers bằng reflection, sử dụng danh sách hardcode
+            if (!controllers.Any())
+            {
+                return GetHardcodedControllersAndActions();
+            }
+
+            return controllers;
+        }
+
+        // Danh sách controllers và actions hardcode làm fallback
+        private Dictionary<string, List<string>> GetHardcodedControllersAndActions()
+        {
+            return new Dictionary<string, List<string>>
+            {
+                { "Home", new List<string> { "Index" } },
+                { "Products", new List<string> { "Index", "Create", "Edit", "Details", "Delete", "ChangeShow" } },
+                { "ProductCategories", new List<string> { "Index", "Create", "Edit", "Details", "Delete" } },
+                { "ProductReviews", new List<string> { "Index" } },
+                { "Blogs", new List<string> { "Index", "Create", "Edit" } },
+                { "Categories", new List<string> { "Index", "Create", "Edit", "MoveUp", "MoveDown" } },
+                { "Orders", new List<string> { "Index", "Details", "Edit" } },
+                { "Menus", new List<string> { "Index", "Create", "Edit", "Details", "Delete", "MoveUp", "MoveDown", "ChangeShow" } },
+                { "HomeSlider", new List<string> { "Index", "Create", "Edit", "Details", "Delete" } },
+                { "FileManager", new List<string> { "Index" } },
+                { "Permissions", new List<string> { "Index", "Create", "Edit", "Delete", "GetActions" } },
+                { "RolePermissions", new List<string> { "Index", "Manage" } },
+                { "Users", new List<string> { "Index", "ChangeRole", "ToggleActive" } }
+            };
         }
 
         // GET: Admin/Permissions
@@ -48,7 +131,43 @@ namespace Harmic.Areas.Admin.Controllers
                 Function._Message = "Bạn không có quyền truy cập";
                 return Redirect("/Login");
             }
+
+            try
+            {
+                // Lấy danh sách controllers và actions
+                var controllersAndActions = GetAllControllersAndActions();
+                if (controllersAndActions != null && controllersAndActions.Any())
+                {
+                    ViewBag.Controllers = controllersAndActions.Keys.OrderBy(c => c).ToList();
+                    ViewBag.ControllersAndActions = controllersAndActions;
+                }
+                else
+                {
+                    ViewBag.Controllers = new List<string>();
+                    ViewBag.ControllersAndActions = new Dictionary<string, List<string>>();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Nếu có lỗi khi quét controllers, vẫn cho phép tạo quyền thủ công
+                ViewBag.Controllers = new List<string>();
+                ViewBag.ControllersAndActions = new Dictionary<string, List<string>>();
+                Function._Message = "Không thể quét controllers tự động. Bạn có thể nhập thủ công.";
+            }
+
             return View();
+        }
+
+        // API endpoint để lấy actions của một controller
+        [HttpGet]
+        public IActionResult GetActions(string controllerName)
+        {
+            var controllersAndActions = GetAllControllersAndActions();
+            if (controllersAndActions.ContainsKey(controllerName))
+            {
+                return Json(controllersAndActions[controllerName]);
+            }
+            return Json(new List<string>());
         }
 
         // POST: Admin/Permissions/Create

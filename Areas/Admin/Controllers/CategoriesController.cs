@@ -45,15 +45,19 @@ namespace Harmic.Areas.Admin.Controllers
         [HttpPost]
         public IActionResult Create(TbCategory category)
         {
-            category.Alias = Function.TitleSlugGenerationAlias(category.Title);
-            category.CreatedDate = DateTime.Now;
-            category.CreatedBy = Function._FullName;
-            category.Position = _context.TbCategories.Count() + 1;
+            if (ModelState.IsValid)
+            {
+                category.Alias = Function.TitleSlugGenerationAlias(category.Title);
+                category.CreatedDate = DateTime.Now;
+                category.CreatedBy = Function._FullName;
+                category.Position = _context.TbCategories.Count() + 1;
 
-            _context.TbCategories.Add(category);
-            _context.SaveChanges();
+                _context.TbCategories.Add(category);
+                _context.SaveChanges();
 
-            return View("Index");
+                return RedirectToAction("Index");
+            }
+            return View(category);
         }
 
         public IActionResult Edit(int id)

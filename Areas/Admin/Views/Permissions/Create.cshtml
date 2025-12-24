@@ -48,17 +48,28 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label asp-for="ControllerName" class="control-label">Controller</label>
-                                            <input asp-for="ControllerName" class="form-control" placeholder="Ví dụ: Products" />
+                                            <select asp-for="ControllerName" id="controllerSelect" class="form-control">
+                                                <option value="">-- Chọn Controller --</option>
+                                                @if (ViewBag.Controllers != null)
+                                                {
+                                                    @foreach (var controller in ViewBag.Controllers as List<string>)
+                                                    {
+                                                        <option value="@controller">@controller</option>
+                                                    }
+                                                }
+                                            </select>
                                             <span asp-validation-for="ControllerName" class="text-danger"></span>
-                                            <small class="form-text text-muted">Tên controller (không có "Controller")</small>
+                                            <small class="form-text text-muted">Chọn controller từ danh sách</small>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label asp-for="ActionName" class="control-label">Action</label>
-                                            <input asp-for="ActionName" class="form-control" placeholder="Ví dụ: Index" />
+                                            <select asp-for="ActionName" id="actionSelect" class="form-control" disabled>
+                                                <option value="">-- Chọn Controller trước --</option>
+                                            </select>
                                             <span asp-validation-for="ActionName" class="text-danger"></span>
-                                            <small class="form-text text-muted">Tên action trong controller</small>
+                                            <small class="form-text text-muted">Chọn action từ danh sách</small>
                                         </div>
                                     </div>
                                 </div>
@@ -83,5 +94,63 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        $(document).ready(function() {
+            var controllersAndActions = @Html.Raw(ViewBag.ControllersAndActions != null ? System.Text.Json.JsonSerializer.Serialize(ViewBag.ControllersAndActions) : "{}");
+
+            // Khi chọn controller, load actions tương ứng
+            $('#controllerSelect').on('change', function() {
+                var controllerName = $(this).val();
+                var actionSelect = $('#actionSelect');
+                
+                if (controllerName) {
+                    // Load actions từ server
+                    $.get('/Admin/Permissions/GetActions', { controllerName: controllerName }, function(actions) {
+                        actionSelect.empty();
+                        actionSelect.append('<option value="">-- Chọn Action --</option>');
+                        
+                        if (actions && actions.length > 0) {
+                            $.each(actions, function(index, action) {
+                                actionSelect.append('<option value="' + action + '">' + action + '</option>');
+                            });
+                            actionSelect.prop('disabled', false);
+                        } else {
+                            actionSelect.append('<option value="">Không có action nào</option>');
+                            actionSelect.prop('disabled', true);
+                        }
+                    });
+                    
+                    // Tự động điền tên quyền
+                    autoFillPermissionName(controllerName);
+                } else {
+                    actionSelect.empty();
+                    actionSelect.append('<option value="">-- Chọn Controller trước --</option>');
+                    actionSelect.prop('disabled', true);
+                }
+            });
+
+            // Khi chọn action, cập nhật tên quyền
+            $('#actionSelect').on('change', function() {
+                var controllerName = $('#controllerSelect').val();
+                var actionName = $(this).val();
+                if (controllerName && actionName) {
+                    autoFillPermissionName(controllerName, actionName);
+                }
+            });
+
+            function autoFillPermissionName(controllerName, actionName) {
+                var permissionNameField = $('#PermissionName');
+                
+                // Chỉ tự động điền nếu field trống
+                if (!permissionNameField.val() || permissionNameField.val().trim() === '') {
+                    var name = controllerName;
+                    if (actionName && actionName !== 'Index') {
+                        name += ' - ' + actionName;
+                    }
+                    permissionNameField.val(name);
+                }
+            }
+        });
+    </script>
 }
 
